@@ -8,7 +8,10 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
   // Páginas sin navbar que no necesitan padding-top
-  const noNavbar = pathname?.startsWith('/waiter') || pathname === '/login' || pathname === '/register';
+  const noNavbar = pathname?.startsWith('/waiter') || 
+                   pathname === '/login' || 
+                   pathname === '/register' ||
+                   pathname?.startsWith('/delivery/checkout');
   
   return (
     <>

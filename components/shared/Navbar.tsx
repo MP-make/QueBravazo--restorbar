@@ -17,7 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // Ocultar navbar en rutas específicas
-  const hideNavbar = pathname?.startsWith('/waiter') || pathname === '/login' || pathname === '/register';
+  const hideNavbar = pathname?.startsWith('/waiter') || pathname === '/login' || pathname === '/register' || pathname?.startsWith('/delivery/checkout');
 
   // Detectar scroll para cambiar estilo del navbar
   useEffect(() => {
