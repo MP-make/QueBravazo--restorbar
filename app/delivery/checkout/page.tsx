@@ -38,6 +38,7 @@ export default function CheckoutPage() {
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
@@ -168,6 +169,16 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Mostrar modal de autenticación ANTES de procesar
+    setShowAuthModal(true);
+  };
+
+  const handleContinueAsGuest = async () => {
+    setShowAuthModal(false);
+    await processOrder();
+  };
+
+  const processOrder = async () => {
     setIsSubmitting(true);
     
     // Construir nota con info de pago
@@ -583,6 +594,97 @@ export default function CheckoutPage() {
             >
               Ya realicé el pago
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Autenticación */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 relative animate-fade-in-up">
+            <button 
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-stone-500" />
+            </button>
+
+            {/* Icono y título */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-stone-800 mb-2">
+                ¡Un paso más!
+              </h3>
+              <p className="text-stone-600 text-sm">
+                Crea una cuenta para obtener beneficios exclusivos
+              </p>
+            </div>
+
+            {/* Beneficios */}
+            <div className="bg-amber-50 rounded-xl p-4 mb-6">
+              <p className="text-sm font-semibold text-amber-800 mb-2">🎁 Beneficios de registrarte:</p>
+              <ul className="space-y-1 text-xs text-amber-700">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Descuentos exclusivos en tu próxima compra
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Acumula puntos con cada pedido
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Historial de pedidos y favoritos
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Pedidos más rápidos con tus datos guardados
+                </li>
+              </ul>
+            </div>
+
+            {/* Opciones */}
+            <div className="space-y-3">
+              {/* Registrarse */}
+              <Link
+                href="/register"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-center transition-all shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                Registrarme ahora
+              </Link>
+
+              {/* Iniciar sesión */}
+              <Link
+                href="/login"
+                className="w-full bg-white hover:bg-stone-50 text-stone-800 py-4 rounded-xl font-semibold text-center transition-all border-2 border-stone-200 hover:border-stone-300 flex items-center justify-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                Ya tengo cuenta
+              </Link>
+
+              {/* Continuar sin cuenta */}
+              <button
+                onClick={handleContinueAsGuest}
+                disabled={isSubmitting}
+                className="w-full bg-stone-100 hover:bg-stone-200 text-stone-600 py-3 rounded-xl font-medium text-center transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Procesando pedido...
+                  </span>
+                ) : (
+                  'Continuar sin cuenta'
+                )}
+              </button>
+            </div>
+
+            <p className="text-xs text-center text-stone-500 mt-4">
+              Puedes crear una cuenta después para acceder a todos los beneficios
+            </p>
           </div>
         </div>
       )}

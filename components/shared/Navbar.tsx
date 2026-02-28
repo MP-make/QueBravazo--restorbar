@@ -6,6 +6,7 @@ import { Search, ShoppingBag, Menu, X, User } from 'lucide-react';
 import { useSearchStore } from '@/lib/stores/search';
 import { useCartStore } from '@/lib/stores/cart';
 import { useUIStore } from '@/lib/stores/ui';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,6 +14,10 @@ export default function Navbar() {
   const { query, setQuery } = useSearchStore();
   const { items } = useCartStore();
   const { setIsCartOpen } = useUIStore();
+  const pathname = usePathname();
+
+  // Ocultar navbar en rutas específicas
+  const hideNavbar = pathname?.startsWith('/waiter') || pathname === '/login' || pathname === '/register';
 
   // Detectar scroll para cambiar estilo del navbar
   useEffect(() => {
@@ -22,6 +27,8 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (hideNavbar) return null;
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${

@@ -130,20 +130,24 @@ export default function ContactoSection() {
             <div>
               <h4 className="font-semibold mb-4">Aceptamos</h4>
               <div className="flex items-center gap-4">
-                <Image
-                  src="/icono-yape.png"
-                  alt="Yape"
-                  width={48}
-                  height={48}
-                  className="object-contain"
-                />
-                <Image
-                  src="/icono-plin.png"
-                  alt="Plin"
-                  width={48}
-                  height={48}
-                  className="object-contain"
-                />
+                <div className="bg-transparent p-2 rounded-lg">
+                  <Image
+                    src="/icono-yape.png"
+                    alt="Yape"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="bg-transparent p-2 rounded-lg">
+                  <Image
+                    src="/icono-plin.png"
+                    alt="Plin"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
                 <span className="text-stone-400 text-sm ml-2">
                   Efectivo, Tarjetas de crédito y débito
                 </span>

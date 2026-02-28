@@ -1,51 +1,77 @@
 # Ventify Restaurante
 
-Web app progresiva para restaurantes que conecta con el SaaS POS Ventify, soportando 3 modos: delivery (e-commerce), waiter (toma pedidos), y menu (carta digital).
+Web app para restaurantes en Next.js con 3 modos: delivery (e-commerce), waiter (toma pedidos), menu (carta digital).
 
-## Modos
+## 🔐 Credenciales de Prueba - Sistema de Meseros
 
-- **Delivery (/)**: E-commerce para pedidos a domicilio.
-- **Waiter (/waiter)**: Toma pedidos rápida para meseros, protegida con login/PIN.
-- **Menu (/menu, /qr)**: Carta digital para clientes en mesa.
+### Meseros Activos:
 
-## Stack Tecnológico
+| Nombre | Email | Contraseña | Rol |
+|--------|-------|------------|-----|
+| Juan Pérez | juan.mesero@ventify.com | mesero123 | Mesero Senior |
+| María García | maria.mesero@ventify.com | mesero123 | Mesera |
+| Carlos López | carlos.mesero@ventify.com | mesero123 | Mesero |
+| Ana Torres | ana.mesero@ventify.com | mesero123 | Mesera |
+| Luis Ramírez | luis.mesero@ventify.com | mesero123 | Mesero Junior |
 
-- Next.js 14+ (App Router, TypeScript)
-- Tailwind CSS
-- Zustand para estado
-- API de Ventify
+### Administrador:
 
-## Getting Started
+| Nombre | Email | Contraseña | Rol |
+|--------|-------|------------|-----|
+| Admin Ventify | admin@ventify.com | admin123 | Administrador |
 
-First, run the development server:
+## 🚀 Acceso al Sistema
+
+1. **Modo Delivery (Clientes)**: `http://localhost:3000/`
+2. **Modo Waiter (Meseros)**: `http://localhost:3000/waiter`
+3. **Modo Menu (Carta Digital)**: `http://localhost:3000/menu`
+
+## 📋 Uso del Sistema de Meseros
+
+1. Accede a `/waiter`
+2. Selecciona una mesa (1-20)
+3. Agrega productos al pedido
+4. Envía la comanda a cocina
+5. El pedido se registra en Ventify con el número de mesa
+
+## 🛠️ Instalación
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 Configuración
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Crea un archivo `.env.local` con:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_VENTIFY_API_URL=https://ventify.com.pe
+NEXT_PUBLIC_VENTIFY_ACCOUNT_ID=tu_account_id
+NEXT_PUBLIC_VENTIFY_API_KEY=tu_api_key
+```
 
-## Learn More
+## 📱 Características
 
-To learn more about Next.js, take a look at the following resources:
+- ✅ Sistema de meseros profesional y responsivo
+- ✅ Selección visual de mesas (20 mesas disponibles)
+- ✅ Búsqueda y filtros avanzados de productos
+- ✅ Panel de comanda en tiempo real
+- ✅ Integración con API de Ventify
+- ✅ Geolocalización en checkout
+- ✅ Múltiples métodos de pago (Efectivo, Yape, Plin)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 Vista de Meseros
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Mejoras Implementadas:
+- Diseño profesional con gradientes y animaciones
+- 20 mesas con estados visuales (disponible/ocupada)
+- Sistema de búsqueda de productos en tiempo real
+- Filtros por categoría y tipo de menú
+- Panel de pedidos mejorado con controles intuitivos
+- Totales calculados automáticamente
+- Responsive para tablets y móviles
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Ventify Restaurante** - Powered by Ventify API

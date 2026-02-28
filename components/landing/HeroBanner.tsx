@@ -5,8 +5,10 @@ import { ShoppingBag, ChevronDown } from "lucide-react";
 
 export default function HeroBanner() {
   const scrollToContent = () => {
-    const nextSection = document.querySelector('#productos-destacados') || document.querySelector('main');
-    nextSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const target = document.getElementById("productos-destacados");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
@@ -39,13 +41,13 @@ export default function HeroBanner() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-end">
-              <Link
-                href="#productos-destacados"
+              <button
+                onClick={scrollToContent}
                 className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/30"
               >
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 Ver Menú
-              </Link>
+              </button>
               <Link
                 href="#contacto"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold rounded-full border-2 border-amber-400/40 transition-all duration-300"
@@ -57,10 +59,11 @@ export default function HeroBanner() {
         </div>
       </div>
       
-      {/* Indicador de scroll */}
+      {/* Indicador de scroll funcional */}
       <button
         onClick={scrollToContent}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-amber-300 animate-bounce cursor-pointer"
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-amber-300 hover:text-amber-400 animate-bounce cursor-pointer transition-colors p-2 rounded-full hover:bg-white/10"
+        aria-label="Desplazar hacia productos"
       >
         <ChevronDown className="w-10 h-10" />
       </button>

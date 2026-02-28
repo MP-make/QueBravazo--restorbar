@@ -14,24 +14,72 @@ import ProductosDestacados from '@/components/landing/ProductosDestacados';
 import PromocionesSection from '@/components/landing/PromocionesSection';
 import ContactoSection from '@/components/landing/ContactoSection';
 
+// Datos mock para carga inicial rápida
+const mockProducts: Product[] = [
+  {
+    id: '1',
+    title: 'Salmón a la Parrilla',
+    price: 28,
+    image: '/fondo_de_platillos.jpg',
+    category: 'Platos Principales',
+    description: 'Delicioso salmón fresco a la parrilla con vegetales',
+    stock: 10,
+    featured: true,
+    isMenuDelDia: true,
+    minPrice: 14
+  },
+  {
+    id: '2',
+    title: 'Coca Cola',
+    price: 5,
+    image: '/icono-yape.png',
+    category: 'Bebidas',
+    description: 'Refresco Coca Cola 500ml',
+    stock: 50,
+    featured: false,
+    isMenuDelDia: false,
+    minPrice: 2.5
+  }
+];
+
 export default function DeliveryPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+  const [products, setProducts] = useState<Product[]>(mockProducts); // Iniciar con datos mock
+  const [isLoading, setIsLoading] = useState(false); // Cambiar a false para no mostrar loading inicialmente
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    // Solo mostrar modal la primera vez que visita
+    if (typeof window !== 'undefined') {
+      const hasVisited = localStorage.getItem('hasVisitedVentify');
+      if (hasVisited) return false;
+      localStorage.setItem('hasVisitedVentify', 'true');
+      return true;
+    }
+    return true;
+  });
   const { isCartOpen, setIsCartOpen } = useUIStore();
 
   useEffect(() => {
-    fetchProducts()
-      .then(setProducts)
-      .finally(() => setIsLoading(false));
+    // Cargar productos de forma asíncrona (no bloqueante)
+    const loadProducts = async () => {
+      try {
+        const realProducts = await fetchProducts();
+        if (realProducts.length > 0) {
+          setProducts(realProducts);
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        // Mantener datos mock si falla la API
+      }
+    };
+
+    loadProducts();
   }, []);
 
   useEffect(() => {
-    // Auto-cerrar modal después de 5 segundos
+    // Auto-cerrar modal después de 3 segundos (reducido)
     if (showWelcomeModal) {
       const timer = setTimeout(() => {
         setShowWelcomeModal(false);
-      }, 5000);
+      }, 3000); // Reducido de 5000 a 3000ms
       return () => clearTimeout(timer);
     }
   }, [showWelcomeModal]);
@@ -40,12 +88,12 @@ export default function DeliveryPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Modal de Bienvenida - DISEÑO MEJORADO */}
+      {/* Modal de Bienvenida - Solo primera visita */}
       {showWelcomeModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="relative max-w-6xl w-full">
             {/* Botón cerrar - MEJORADO */}
-            <button 
+            <button
               onClick={() => setShowWelcomeModal(false)}
               className="absolute -top-3 -right-3 p-2.5 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full transition-all z-20 shadow-2xl border-4 border-white hover:scale-110 active:scale-95"
               aria-label="Cerrar modal"
@@ -80,14 +128,14 @@ export default function DeliveryPage() {
                     <div className="absolute -top-4 -right-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-xl animate-pulse z-10 border-2 border-white">
                       ¡NUEVO!
                     </div>
-                    
+
                     {/* Tarjeta con borde amarillo grueso */}
                     <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 rounded-3xl p-8 shadow-2xl border-[6px] border-amber-400">
                       {/* Icono de tenedor y cuchillo */}
                       <div className="text-center mb-4">
                         <span className="text-6xl drop-shadow-lg">🍽️</span>
                       </div>
-                      
+
                       {/* Texto del cartel */}
                       <p className="text-2xl lg:text-3xl font-bold text-orange-800 text-center leading-tight">
                         ¡Te invito a probar nuestros deliciosos platillos! 🍕

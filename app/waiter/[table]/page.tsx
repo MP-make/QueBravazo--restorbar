@@ -13,20 +13,22 @@ export default async function TablePage({ params }: PageProps) {
   const products = await fetchProducts();
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-gray-50">
       {/* Header con botón de regresar */}
       <WaiterHeader tableId={params.table} />
 
-      {/* Layout principal */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Catalog Column - Flexible */}
-        <div className="flex-1 overflow-hidden">
+      {/* Layout principal - RESPONSIVO */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Catalog Column - Ocupa todo en móvil, flexible en desktop */}
+        <div className="flex-1 overflow-hidden order-2 lg:order-1">
           <WaiterMenu products={products} />
         </div>
 
-        {/* Order Column - Fixed Width */}
-        <div className="w-80 lg:w-96 flex-shrink-0">
-          <OrderPanel tableId={params.table} />
+        {/* Order Column - Panel lateral en desktop, sticky bottom en móvil */}
+        <div className="lg:w-80 xl:w-96 lg:flex-shrink-0 order-1 lg:order-2">
+          <div className="lg:h-full">
+            <OrderPanel tableId={params.table} />
+          </div>
         </div>
       </div>
     </div>
