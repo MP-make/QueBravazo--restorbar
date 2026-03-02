@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ventify Restaurante",
-  description: "Web app para restaurantes con modos delivery, waiter y menu",
+  title: "¡Qué Bravazo! Restobar",
+  description: "Restobar de comida rápida peruana — Broaster, hamburguesas, alitas BBQ, cervezas y más. Delivery en Lima.",
 };
 
 export default function RootLayout({

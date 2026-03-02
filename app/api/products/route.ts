@@ -16,9 +16,9 @@ export async function GET() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': API_KEY
+        'X-API-Key': API_KEY,
       },
-      next: { revalidate: 3600 } // Cache por 1 hora (ISR)
+      cache: 'no-store', // siempre fresco, sin caché de 1 hora
     });
 
     if (!response.ok) {
@@ -28,21 +28,29 @@ export async function GET() {
     const json = await response.json();
     const ventifyProducts = json.data || [];
 
-    // Mapeo de productos
     const products = ventifyProducts.map((item: any) => ({
       id: item.id,
+      sku: item.sku || item.id,
       title: item.name,
       price: item.price,
-      image: item.imageUrl || 'https://via.placeholder.com/300?text=Sin+Foto',
+      image: item.imageUrl || '/bravazo-logo.jpeg',
       category: item.category || 'Otros',
       description: item.description || '',
-      stock: item.stock || 0,
+      stock: item.stock ?? 0,
       featured: item.isFeatured || false,
       isMenuDelDia: item.isMenuDelDia || false,
       minPrice: item.minPrice || item.price * 0.5,
     }));
 
-    return NextResponse.json({ data: products }, { status: 200 });
+    return NextResponse.json(
+      { data: products },
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

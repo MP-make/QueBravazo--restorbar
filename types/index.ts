@@ -5,6 +5,7 @@ export type AppMode = 'delivery' | 'waiter' | 'menu';
 
 export interface Product {
   id: string;
+  sku?: string;        // SKU de Ventify (ej: 'Hamb-005', 'Fri-001')
   title: string;       // Mapeado desde 'name' de Ventify
   price: number;
   image: string;       // Mapeado desde 'imageUrl'

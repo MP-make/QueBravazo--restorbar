@@ -11,11 +11,11 @@ import { useToastStore } from '@/lib/stores/toast';
 // Configuración de pagos - PERSONALIZA ESTOS DATOS
 const PAYMENT_CONFIG = {
   yape: {
-    nombre: "Ventify Restaurante",
+    nombre: "¡Qué Bravazo! Restobar",
     numero: "999 888 777", // Tu número de Yape
   },
   plin: {
-    nombre: "Ventify Restaurante", 
+    nombre: "¡Qué Bravazo! Restobar", 
     numero: "999 888 777", // Tu número de Plin
   },
   deliveryCost: 5, // Costo de delivery

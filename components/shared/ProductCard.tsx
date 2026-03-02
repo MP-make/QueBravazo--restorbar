@@ -1,7 +1,7 @@
 // components/shared/ProductCard.tsx
 "use client";
 import Image from 'next/image';
-import { Plus, ShoppingCart, Eye } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Product, AppMode } from '@/types';
 import { useProductActions } from '@/lib/hooks/useProductActions';
 
@@ -13,116 +13,94 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, mode, onQuickView }: ProductCardProps) => {
   const { handleAddToCart } = useProductActions();
-
-  // Verificar stock
-  const isOutOfStock = product.stock !== undefined && product.stock <= 0;
+  // Solo mostrar "agotado" en modo waiter, nunca al cliente final
+  const isOutOfStock = mode === 'waiter' && product.stock !== undefined && product.stock <= 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-      {/* Imagen con badge de stock */}
-      <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
-        <Image 
-          src={product.image || '/placeholder.png'} 
-          alt={product.title} 
-          fill 
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          className="object-cover group-hover:scale-110 transition-transform duration-300"
+    <div className="bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm border border-stone-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
+
+      {/* ── Imagen ──────────────────────────────────────────────── */}
+      <div className="relative w-full aspect-square overflow-hidden bg-stone-100">
+        <Image
+          src={product.image || '/bravazo-logo.jpeg'}
+          alt={product.title}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`object-cover transition-transform duration-300 ${!isOutOfStock ? 'group-hover:scale-105' : 'opacity-60'}`}
         />
-        
-        {/* Badge de stock */}
+
+        {/* Overlay agotado — solo waiter */}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm">
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
               Agotado
             </span>
           </div>
         )}
 
-        {/* Badge de Menú del Día */}
-        {product.isMenuDelDia && mode === 'waiter' && (
-          <div className="absolute top-3 left-3 bg-amber-500 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg">
-            🍽️ Menú del Día
-          </div>
+        {/* Badge destacado */}
+        {product.featured && !isOutOfStock && (
+          <span className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+            ⭐ Destacado
+          </span>
         )}
 
-        {/* Badge de Featured */}
-        {product.featured && mode === 'delivery' && (
-          <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg">
-            ⭐ Destacado
-          </div>
+        {/* Badge menú del día (waiter) */}
+        {product.isMenuDelDia && mode === 'waiter' && (
+          <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+            🍽️ Menú del día
+          </span>
         )}
+
+        {/* Precio sobre la imagen — abajo */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+          <span className="text-white font-black text-lg leading-none drop-shadow">
+            S/ {product.price.toFixed(2)}
+          </span>
+        </div>
       </div>
 
-      {/* Contenido */}
-      <div className="p-4 flex flex-col flex-grow">
-        {/* Categoría */}
-        <span className="text-xs text-stone-500 font-medium mb-1">{product.category}</span>
-        
-        {/* Título */}
-        <h3 className="font-bold text-lg text-stone-800 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
-          {product.title}
-        </h3>
-        
-        {/* Descripción */}
-        {product.description && (
-          <p className="text-sm text-stone-600 line-clamp-2 mb-3">{product.description}</p>
-        )}
-        
-        {/* Footer con precio y acción */}
-        <div className="mt-auto pt-3 flex items-center justify-between border-t border-stone-100">
-          <div>
-            <span className="text-2xl font-black text-orange-600">S/ {product.price.toFixed(2)}</span>
-            {/* Mostrar precio mínimo si hay descuento disponible */}
-            {product.minPrice && product.minPrice < product.price && mode === 'waiter' && (
-              <p className="text-xs text-stone-500">Desde S/ {product.minPrice.toFixed(2)}</p>
-            )}
-          </div>
-
-          {/* Botones según modo */}
-          {!isOutOfStock && (
-            <>
-              {/* MODO DELIVERY: Botón flotante naranja */}
-              {mode === 'delivery' && (
-                <button 
-                  onClick={() => handleAddToCart(product, 'delivery')}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-lg transition-all active:scale-95 group-hover:scale-110"
-                  title="Agregar al carrito"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
-              )}
-
-              {/* MODO WAITER: Botón verde rápido */}
-              {mode === 'waiter' && (
-                <button 
-                  onClick={() => handleAddToCart(product, 'waiter')}
-                  className="bg-green-600 hover:bg-green-700 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 font-bold text-xl"
-                  title="Agregar a comanda"
-                >
-                  +
-                </button>
-              )}
-
-              {/* MODO MENU: Solo vista */}
-              {mode === 'menu' && (
-                <button
-                  onClick={() => onQuickView?.(product)}
-                  className="flex items-center gap-2 text-stone-600 hover:text-orange-600 font-medium text-sm transition-colors"
-                >
-                  <Eye className="w-4 h-4" />
-                  Ver más
-                </button>
-              )}
-            </>
-          )}
-
-          {/* Si está agotado */}
-          {isOutOfStock && (
-            <span className="text-xs text-red-500 font-bold px-3 py-1 bg-red-50 rounded-full">
-              Sin stock
-            </span>
+      {/* ── Info + acción ────────────────────────────────────────── */}
+      <div className="px-3 py-2.5 flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-stone-400 font-medium uppercase tracking-wide leading-none mb-0.5">
+            {product.category}
+          </p>
+          <h3 className="text-sm font-bold text-stone-800 leading-tight line-clamp-2">
+            {product.title}
+          </h3>
+          {product.description && (
+            <p className="text-[11px] text-stone-400 line-clamp-1 mt-0.5">{product.description}</p>
           )}
         </div>
+
+        {/* Botón acción */}
+        {!isOutOfStock ? (
+          <>
+            {(mode === 'delivery' || mode === 'menu') && (
+              <button
+                onClick={() => handleAddToCart(product, 'delivery')}
+                className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 active:scale-90 text-white rounded-full flex items-center justify-center shadow-md shadow-orange-500/30 transition-all"
+                title="Agregar al carrito"
+              >
+                <Plus className="w-5 h-5" strokeWidth={3} />
+              </button>
+            )}
+            {mode === 'waiter' && (
+              <button
+                onClick={() => handleAddToCart(product, 'waiter')}
+                className="flex-shrink-0 w-9 h-9 bg-green-500 hover:bg-green-600 active:scale-90 text-white rounded-full flex items-center justify-center shadow-md shadow-green-500/30 transition-all font-black text-xl"
+                title="Agregar a comanda"
+              >
+                +
+              </button>
+            )}
+          </>
+        ) : (
+          <span className="flex-shrink-0 text-[10px] text-red-400 font-bold bg-red-50 px-2 py-1 rounded-full border border-red-100">
+            Sin stock
+          </span>
+        )}
       </div>
     </div>
   );

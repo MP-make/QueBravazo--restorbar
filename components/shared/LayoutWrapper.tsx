@@ -7,15 +7,15 @@ import { GlobalCartDrawer } from "@/components/shared/GlobalCartDrawer";
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Páginas sin navbar que no necesitan padding-top
   const noNavbar = pathname?.startsWith('/waiter') || 
                    pathname === '/login' || 
                    pathname === '/register' ||
-                   pathname?.startsWith('/delivery/checkout');
+                   pathname?.startsWith('/delivery/checkout') ||
+                   pathname === '/menu';
   
   return (
     <>
-      <Navbar />
+      {!noNavbar && <Navbar />}
       <main className={noNavbar ? '' : 'pt-16'}>
         {children}
       </main>

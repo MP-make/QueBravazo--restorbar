@@ -102,7 +102,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 to-orange-600/20" />
         <Image
           src="/banner_ventify_1920x600.jpg"
-          alt="Ventify Restaurante"
+          alt="¡Qué Bravazo! Restobar"
           fill
           className="object-cover"
           priority
@@ -112,11 +112,10 @@ export default function LoginPage() {
         {/* Contenido sobre la imagen */}
         <div className="absolute bottom-0 left-0 right-0 p-12">
           <h1 className="text-4xl font-bold text-white mb-4">
-            Bienvenido a <span className="text-amber-400">Ventify</span>
+            Bienvenido a <span className="text-amber-400">¡Qué Bravazo!</span>
           </h1>
           <p className="text-stone-300 text-lg max-w-md">
-            Sistema integral de gestión para tu restaurante. 
-            Delivery, comandas y carta digital en un solo lugar.
+            Restobar de comida rápida peruana. Inicia sesión para gestionar pedidos, delivery y más. 🍗🍺
           </p>
           
           {/* Badges de modos */}
@@ -140,8 +139,8 @@ export default function LoginPage() {
           <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-block">
               <span className="text-3xl font-bold">
-                <span className="text-amber-400">Ventify</span>
-                <span className="text-white"> Restaurante</span>
+                <span className="text-amber-400">¡Qué</span>
+                <span className="text-white"> Bravazo!</span>
               </span>
             </Link>
           </div>

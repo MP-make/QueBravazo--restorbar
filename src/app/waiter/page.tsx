@@ -57,7 +57,7 @@ export default function WaiterPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Sistema de Meseros</h1>
-                <p className="text-sm text-gray-500">Ventify Restaurante</p>
+                <p className="text-sm text-gray-500">¡Qué Bravazo! Restobar</p>
               </div>
             </div>
             

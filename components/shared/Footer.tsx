@@ -1,16 +1,12 @@
 "use client";
-import { useAuthStore } from '@/lib/stores/auth';
 
 export default function Footer() {
-  const { isLoggedIn, logout } = useAuthStore();
-
   return (
-    <footer className="bg-gradient-to-b from-stone-800 to-stone-900 text-white py-8">
+    <footer className="bg-black text-white py-5 border-t border-stone-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <p className="text-stone-400 text-sm">
-            © 2026 Ventify Restaurante. Todos los derechos reservados.
-          </p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-stone-500 text-xs">
+          <p>© 2026 <span className="text-amber-400 font-semibold">¡Qué Bravazo! Restobar</span>. Todos los derechos reservados.</p>
+          <p>🔥 Broaster · Hamburguesas · Alitas BBQ · Cervezas</p>
         </div>
       </div>
     </footer>

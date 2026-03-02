@@ -52,16 +52,18 @@ export const fetchProducts = async (): Promise<Product[]> => {
     const ventifyProducts = json.data || [];
     console.log('✅ Productos encontrados:', ventifyProducts.length);
 
-    // MAPEO: Convertir formato Ventify -> Formato Restaurante
+    // Los datos ya vienen mapeados desde /api/products (title, image, etc.)
+    // Solo los pasamos tal cual al tipo Product
     return ventifyProducts.map((item: any) => ({
       id: item.id,
-      title: item.name,
+      sku: item.sku || item.id,
+      title: item.title,           // ✅ ya viene como 'title' (mapeado en route.ts)
       price: item.price,
-      image: item.imageUrl || 'https://via.placeholder.com/300?text=Sin+Foto',
+      image: item.image || '/bravazo-logo.jpeg',  // ✅ ya viene como 'image'
       category: item.category || 'Otros',
       description: item.description || '',
-      stock: item.stock || 0,
-      featured: item.isFeatured || false,
+      stock: item.stock ?? 0,
+      featured: item.featured || false,
       isMenuDelDia: item.isMenuDelDia || false,
       minPrice: item.minPrice || item.price * 0.5,
     }));

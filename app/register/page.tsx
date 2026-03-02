@@ -99,7 +99,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 to-orange-600/20" />
         <Image
           src="/banner_ventify_1920x600.jpg"
-          alt="Ventify Restaurante"
+          alt="¡Qué Bravazo! Restobar"
           fill
           className="object-cover"
           priority
@@ -109,11 +109,10 @@ export default function RegisterPage() {
         {/* Contenido sobre la imagen */}
         <div className="absolute bottom-0 left-0 right-0 p-12">
           <h1 className="text-4xl font-bold text-white mb-4">
-            Únete a <span className="text-amber-400">Ventify</span>
+            Únete a <span className="text-amber-400">¡Qué Bravazo!</span>
           </h1>
           <p className="text-stone-300 text-lg max-w-md mb-8">
-            Crea tu cuenta y disfruta de pedidos rápidos, historial de compras 
-            y promociones exclusivas.
+            Crea tu cuenta y pide tu Broaster, hamburguesas, alitas y más con delivery express. 🍗🔥
           </p>
           
           {/* Beneficios */}
@@ -140,8 +139,8 @@ export default function RegisterPage() {
           <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-block">
               <span className="text-3xl font-bold">
-                <span className="text-amber-400">Ventify</span>
-                <span className="text-white"> Restaurante</span>
+                <span className="text-amber-400">¡Qué</span>
+                <span className="text-white"> Bravazo!</span>
               </span>
             </Link>
           </div>

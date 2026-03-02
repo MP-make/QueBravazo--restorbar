@@ -62,10 +62,10 @@ export default function GaleriaSection() {
             📸 GALERÍA
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
-            Conoce <span className="gradient-text">Ventify</span>
+            Conoce <span className="gradient-text">¡Qué Bravazo!</span>
           </h2>
           <p className="text-stone-600 max-w-2xl mx-auto">
-            Echa un vistazo a nuestro restaurante, ambiente acogedor y deliciosos platillos
+            Echa un vistazo a nuestro restobar, el ambiente y los platillos que nos hacen únicos 🔥
           </p>
         </div>
 

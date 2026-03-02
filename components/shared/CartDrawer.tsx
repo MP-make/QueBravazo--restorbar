@@ -16,23 +16,23 @@ interface CartDrawerProps {
 export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
   const { items, updateQuantity, addItem } = useCartStore();
   const router = useRouter();
-  const [localBebidas, setLocalBebidas] = useState<Product[]>(bebidas || []);
+  const [localBebidas, setLocalBebidas] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (!bebidas || bebidas.length === 0) {
-      fetchProducts().then(products => {
-        const filtered = products.filter(p => 
-          p.category === 'Bebidas' || 
-          p.title.toLowerCase().includes('cola') || 
-          p.title.toLowerCase().includes('inca') || 
-          p.title.toLowerCase().includes('agua')
-        );
-        setLocalBebidas(filtered);
-      });
+    // Si nos llegan bebidas por prop (aunque sea tarde), úsalas
+    if (bebidas && bebidas.length > 0) {
+      setLocalBebidas(bebidas);
+      return;
     }
-  }, [bebidas]);
-
-  const displayBebidas = bebidas && bebidas.length > 0 ? bebidas : localBebidas;
+    // Si no hay prop, cargamos directamente desde la API
+    fetchProducts().then(products => {
+      const filtered = products.filter(p => {
+        const cat = (p.category || '').toLowerCase();
+        return cat.includes('bebida') || cat.includes('gaseosa') || cat.includes('cerveza');
+      });
+      setLocalBebidas(filtered);
+    });
+  }, [bebidas]); // re-ejecuta cada vez que bebidas cambie
 
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
   const total = subtotal; // Assuming no taxes for now
@@ -111,28 +111,32 @@ export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
           )}
 
           {/* Upselling Section */}
-          {displayBebidas.length > 0 && (
+          {localBebidas.length > 0 && (
             <div className="mt-6 border-t pt-4">
               <h3 className="text-sm font-semibold text-gray-800 mb-3">¿Deseas algo de tomar? 🥤</h3>
-              <div className="flex space-x-3 overflow-x-auto pb-2">
-                {displayBebidas.map((bebida) => (
-                  <div key={bebida.id} className="flex-shrink-0 w-20 text-center">
-                    <div className="relative w-10 h-10 rounded-lg overflow-hidden mb-2 mx-auto">
+              <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
+                {localBebidas.map((bebida) => (
+                  <div key={bebida.id} className="flex-shrink-0 w-24 snap-start flex flex-col items-center">
+                    {/* Imagen con tamaño fijo y posición relative explícita */}
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden mb-1 bg-stone-100">
                       <Image
-                        src={bebida.image}
-                        alt={bebida.title}
+                        src={bebida.image || '/bravazo-logo.jpeg'}
+                        alt={bebida.title || 'Bebida'}
                         fill
-                        sizes="40px"
+                        sizes="64px"
                         className="object-cover"
                       />
                     </div>
-                    <h4 className="text-xs font-medium text-gray-900 mb-1 truncate">{bebida.title}</h4>
-                    <p className="text-xs text-orange-600 font-bold mb-2">S/ {bebida.price.toFixed(2)}</p>
+                    {/* Nombre con wrap para que no se corte */}
+                    <p className="text-xs font-semibold text-gray-800 text-center leading-tight mb-0.5 w-full line-clamp-2">
+                      {bebida.title}
+                    </p>
+                    <p className="text-xs text-orange-600 font-bold mb-1">S/ {bebida.price.toFixed(2)}</p>
                     <button
                       onClick={() => addItem(bebida)}
-                      className="w-6 h-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors mx-auto"
+                      className="w-7 h-7 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
                     >
-                      <Plus size={12} />
+                      <Plus size={14} />
                     </button>
                   </div>
                 ))}
