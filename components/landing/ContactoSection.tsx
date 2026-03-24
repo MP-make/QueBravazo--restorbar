@@ -25,7 +25,7 @@ export default function ContactoSection() {
             <div className="flex items-start gap-4">
               <div className="bg-white/10 p-3 rounded-2xl">
                 <Image
-                  src="/bravazo-logo.jpeg"
+                  src="/logo-que-bravazo.png"
                   alt="¡Qué Bravazo! Logo"
                   width={70}
                   height={70}

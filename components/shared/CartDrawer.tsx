@@ -120,7 +120,7 @@ export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
                     {/* Imagen con tamaño fijo y posición relative explícita */}
                     <div className="relative w-16 h-16 rounded-xl overflow-hidden mb-1 bg-stone-100">
                       <Image
-                        src={bebida.image || '/bravazo-logo.jpeg'}
+                        src={bebida.image || '/logo-que-bravazo.png'}
                         alt={bebida.title || 'Bebida'}
                         fill
                         sizes="64px"

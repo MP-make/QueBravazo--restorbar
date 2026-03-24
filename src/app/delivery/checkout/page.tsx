@@ -281,7 +281,7 @@ export default function CheckoutPage() {
                 {items.map(item => (
                   <div key={item.id} className="flex items-center gap-3">
                     <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
-                      <Image src={item.image || '/bravazo-logo.jpeg'} alt={item.title} fill className="object-cover" sizes="44px" />
+                      <Image src={item.image || '/logo-que-bravazo.png'} alt={item.title} fill className="object-cover" sizes="44px" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-stone-800 truncate">{item.title}</p>

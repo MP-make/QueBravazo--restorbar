@@ -22,7 +22,7 @@ export const ProductCard = ({ product, mode, onQuickView }: ProductCardProps) =>
       {/* ── Imagen ──────────────────────────────────────────────── */}
       <div className="relative w-full aspect-square overflow-hidden bg-stone-100">
         <Image
-          src={product.image || '/bravazo-logo.jpeg'}
+          src={product.image || '/logo-que-bravazo.png'}
           alt={product.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

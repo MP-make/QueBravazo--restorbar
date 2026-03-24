@@ -59,7 +59,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
       sku: item.sku || item.id,
       title: item.title,           // ✅ ya viene como 'title' (mapeado en route.ts)
       price: item.price,
-      image: item.image || '/bravazo-logo.jpeg',  // ✅ ya viene como 'image'
+      image: item.image || '/logo-que-bravazo.png',  // ✅ ya viene como 'image'
       category: item.category || 'Otros',
       description: item.description || '',
       stock: item.stock ?? 0,

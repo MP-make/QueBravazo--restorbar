@@ -33,7 +33,7 @@ export async function GET() {
       sku: item.sku || item.id,
       title: item.name,
       price: item.price,
-      image: item.imageUrl || '/BRAVAZO-LOGO.jpeg',
+      image: item.imageUrl || '/logo-que-bravazo.png',
       category: item.category || 'Otros',
       description: item.description || '',
       stock: item.stock ?? 0,

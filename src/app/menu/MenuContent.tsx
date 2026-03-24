@@ -90,7 +90,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
             <div className="relative w-9 h-9 flex-shrink-0">
               <Image
-                src="/bravazo-logo.jpeg"
+                src="/logo-que-bravazo.png"
                 alt="¡Qué Bravazo!"
                 fill
                 className="rounded-full object-cover ring-2 ring-amber-500"

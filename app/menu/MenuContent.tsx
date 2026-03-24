@@ -84,7 +84,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
       <header className="sticky top-0 z-40 bg-[#1a1a1a] shadow-2xl">
 
         {/* Fila única: logo | buscador | carrito */}
-        <div className="max-w-7xl mx-auto px-4 h-[60px] flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
 
           {/* Logo + nombre */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">

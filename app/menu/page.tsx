@@ -1,33 +1,20 @@
-import { Suspense } from 'react';
+"use client";
+import { useState, useEffect } from 'react';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import MenuContent from './MenuContent';
+import { fetchProducts } from '@/lib/api/ventify';
+import { Product } from '@/types';
 
-async function getProducts() {
-  // Usar NEXT_PUBLIC_BASE_URL, o la URL automática de Vercel, o localhost
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
-    ? process.env.NEXT_PUBLIC_BASE_URL 
-    : process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000';
+export default function MenuPage() {
+  const [products, setProducts] = useState<Product[]>([]);
 
-  try {
-    const res = await fetch(`${baseUrl}/api/products`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
-  } catch {
-    return [];
-  }
-}
-
-export default async function MenuPage() {
-  const products = await getProducts();
+  useEffect(() => {
+    fetchProducts().then(setProducts).catch(console.error);
+  }, []);
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <Suspense fallback={<LoadingSkeleton />}>
-        <MenuContent initialProducts={products} />
-      </Suspense>
+      <MenuContent initialProducts={products} />
     </div>
   );
 }
