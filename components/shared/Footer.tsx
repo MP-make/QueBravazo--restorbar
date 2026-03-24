@@ -9,6 +9,7 @@ export default function Footer() {
           {/* Ubicación */}
           <div>
             <h3 className="text-amber-500 font-bold mb-4 flex items-center gap-2">
+              <img src="/logo_que_bravazo.png" alt="Logo" className="w-8 h-8 rounded-full border border-stone-800" />
               <MapPin className="w-5 h-5" /> Ubicación
             </h3>
             <a 

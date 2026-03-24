@@ -1,9 +1,10 @@
 import { Suspense } from 'react';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import MenuContent from './MenuContent';
+import { getBaseUrl } from '@/lib/utils';
 
 async function getProducts() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getBaseUrl();
   try {
     const res = await fetch(`${baseUrl}/api/products`, { cache: 'no-store' });
     if (!res.ok) return [];

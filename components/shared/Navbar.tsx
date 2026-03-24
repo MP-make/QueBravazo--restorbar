@@ -90,17 +90,19 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 group">
-              <Image
-                src="/bravazo-logo.jpeg"
-                alt="¡Qué Bravazo!"
-                width={44}
-                height={44}
-                className="object-contain rounded-full group-hover:scale-105 transition-transform ring-2 ring-amber-500/50"
-              />
-              <div className="text-lg font-extrabold leading-tight">
-                <span className="text-amber-400">¡Qué</span>
-                <span className="text-white"> Bravazo!</span>
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500/20">
+                <img 
+                  src="/logo_que_bravazo.png" 
+                  alt="¡Qué Bravazo! Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-extrabold leading-tight">
+                  <span className="text-amber-400">¡Qué</span>
+                  <span className="text-white"> Bravazo!</span>
+                </span>
               </div>
             </Link>
 

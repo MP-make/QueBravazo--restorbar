@@ -88,12 +88,11 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
 
           {/* Logo + nombre */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="relative w-9 h-9 flex-shrink-0">
-              <Image
-                src="/BRAVAZO-LOGO.jpeg"
-                alt="¡Qué Bravazo!"
-                fill
-                className="rounded-full object-cover ring-2 ring-amber-500"
+            <div className="w-[38px] h-[38px] rounded-full overflow-hidden border border-white/10 bg-black flex-shrink-0">
+              <img 
+                src="/logo_que_bravazo.png" 
+                alt="Logo" 
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="leading-none hidden sm:block">
