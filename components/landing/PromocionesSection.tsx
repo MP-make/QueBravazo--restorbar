@@ -1,41 +1,49 @@
 "use client";
 import Image from "next/image";
 import { Percent, Gift, Clock, Sparkles } from "lucide-react";
+import { Product } from "@/types";
+import { useCartStore } from "@/lib/stores/cart";
+import { useToastStore } from "@/lib/stores/toast";
 
-const promociones = [
+interface PromocionesSectionProps {
+  products: Product[];
+}
+
+const comboData = [
   {
-    id: 1,
-    titulo: "Combo Bravazo",
-    descripcion: "Hamburguesa ¡Qué Bravazo! + 1 jarra de chicha",
-    precio: "S/ 22.00",
-    precioAnterior: "S/ 28.00",
-    imagen: "/Fondo frituras.png",
+    title: "Combo Bravazo",
     badge: "🔥 El Más Pedido",
     color: "from-amber-600 to-orange-700",
+    precioAnterior: "S/ 28.00",
   },
   {
-    id: 2,
-    titulo: "Combo Chévere",
-    descripcion: "2 hamburguesas + 2 Pilsen heladas",
-    precio: "S/ 30.00",
-    precioAnterior: "S/ 36.00",
-    imagen: "/Fondo restaurante.png",
+    title: "Combo Chevere",
     badge: "🍺 Con Cerveza",
     color: "from-emerald-600 to-teal-700",
+    precioAnterior: "S/ 36.00",
   },
   {
-    id: 3,
-    titulo: "Happy Hour",
-    descripcion: "2 x 20 en Pisco Sour y Mojito",
-    precio: "2x20",
-    precioAnterior: null,
-    imagen: "/menu del dia.jpeg",
+    title: "Happy Hour",
     badge: "🍹 2x20",
     color: "from-violet-600 to-purple-700",
+    precioAnterior: null,
   },
 ];
 
-export default function PromocionesSection() {
+export default function PromocionesSection({ products }: PromocionesSectionProps) {
+  const { addItem } = useCartStore();
+  const { addToast } = useToastStore();
+
+  const handleAddToCart = (product: Product) => {
+    addItem(product);
+    addToast(`✅ ${product.title} agregado al carrito`);
+  };
+
+  const combos = comboData.map(data => {
+    const product = products.find(p => p.title.toLowerCase().includes(data.title.toLowerCase()));
+    return product ? { ...data, product } : null;
+  }).filter(Boolean);
+
   return (
     <section id="promociones" className="py-16 md:py-24 section-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,39 +63,48 @@ export default function PromocionesSection() {
 
         {/* Grid de promociones */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {promociones.map((promo) => (
-            <div key={promo.id} className="group relative card-elegant overflow-hidden">
-              <div className="relative h-56 overflow-hidden">
-                <Image
-                  src={promo.imagen}
-                  alt={promo.titulo}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-t ${promo.color} opacity-50`} />
-                <div className="absolute top-4 right-4 glass-effect px-4 py-2 rounded-full">
-                  <span className="font-bold text-stone-800">{promo.badge}</span>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-stone-800 mb-2">{promo.titulo}</h3>
-                <p className="text-stone-600 mb-4">{promo.descripcion}</p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-3xl font-bold gradient-text">{promo.precio}</span>
-                    {promo.precioAnterior && (
-                      <span className="text-lg text-stone-400 line-through ml-2">{promo.precioAnterior}</span>
-                    )}
+          {combos.map((combo) => {
+            if (!combo || !combo.product) return null;
+            const { product, badge, color, precioAnterior } = combo;
+            return (
+              <div key={product.id} className="group relative card-elegant overflow-hidden">
+                <div className="relative h-56 overflow-hidden">
+                  <Image
+                    src={product.image || '/Fondo frituras.png'}
+                    alt={product.title}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${color} opacity-50`} />
+                  <div className="absolute top-4 right-4 glass-effect px-4 py-2 rounded-full">
+                    <span className="font-bold text-stone-800">{badge}</span>
                   </div>
-                  <button className="btn-primary">¡Lo quiero!</button>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-stone-800 mb-2">{product.title}</h3>
+                  <p className="text-stone-600 mb-4">{product.description || 'Combo especial'}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-3xl font-bold gradient-text">S/ {product.price.toFixed(2)}</span>
+                      {precioAnterior && (
+                        <span className="text-lg text-stone-400 line-through ml-2">{precioAnterior}</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      className="btn-primary"
+                    >
+                      ¡Lo quiero!
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Banner de oferta especial — OCULTO TEMPORALMENTE */}
-        {/* 
+        {/*
         <div className="mt-16 relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-700 via-orange-600 to-rose-600 p-8 md:p-12 shadow-warm">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0 bg-[radial-gradient(circle,_white_1px,_transparent_1px)] bg-[length:24px_24px]" />

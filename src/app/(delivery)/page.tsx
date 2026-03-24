@@ -118,7 +118,7 @@ export default function DeliveryPage() {
 
       <HeroBanner />
       <ProductosDestacados products={products} />
-      <PromocionesSection />
+      <PromocionesSection products={products} />
       <ContactoSection />
       <Footer />
       <CartDrawer visible={isCartOpen} onClose={() => setIsCartOpen(false)} bebidas={bebidas} />

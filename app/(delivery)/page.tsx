@@ -11,6 +11,7 @@ import { X } from 'lucide-react';
 // Componentes de Landing Page
 import HeroBanner from '@/components/landing/HeroBanner';
 import ProductosDestacados from '@/components/landing/ProductosDestacados';
+import TragosSection from '@/components/landing/TragosSection';
 import PromocionesSection from '@/components/landing/PromocionesSection';
 import ContactoSection from '@/components/landing/ContactoSection';
 
@@ -140,13 +141,16 @@ export default function DeliveryPage() {
       {/* 2. Productos Destacados / Lo más vendido */}
       <ProductosDestacados products={products} />
 
-      {/* 3. Sección de Promociones (Ingredientes, Preparación, Delivery) */}
-      <PromocionesSection />
+      {/* 3. Sección de Tragos */}
+      <TragosSection products={products} />
 
-      {/* 4. Información de Contacto */}
+      {/* 4. Sección de Promociones (Ingredientes, Preparación, Delivery) */}
+      <PromocionesSection products={products} />
+
+      {/* 5. Información de Contacto */}
       <ContactoSection />
 
-      {/* 5. Footer */}
+      {/* 6. Footer */}
       <Footer />
 
       {/* Cart Drawer */}

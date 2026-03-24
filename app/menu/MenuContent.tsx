@@ -19,7 +19,9 @@ const TABS = [
   { id: 'gaseosas', label: 'Gaseosas', emoji: '🥤', icon: GlassWater,
     keywords: ['gaseosa', 'refresco', 'cola', 'inca kola', 'sprite', 'fanta'] },
   { id: 'bebidas', label: 'Bebidas', emoji: '🍺', icon: Beer,
-    keywords: ['bebida', 'cerveza', 'trago', 'licor', 'vino', 'ron', 'pisco', 'vodka', 'mike', 'cielo', 'agua', 'jugo', 'marciano'] },
+    keywords: ['bebida', 'cerveza', 'agua', 'jugo', 'marciano'] },
+  { id: 'tragos', label: 'Tragos', emoji: '🍹', icon: Sparkles,
+    keywords: ['trago', 'licor', 'coctel', 'vodka', 'ron', 'pisco', 'whisky', 'bebida alcoholica'] },
   { id: 'extras', label: 'Extras', emoji: '✨', icon: Sparkles, keywords: [] },
 ] as const;
 
@@ -69,7 +71,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
   }, [initialProducts, activeTab, search]);
 
   const tabCounts = useMemo(() => {
-    const counts: Record<TabId, number> = { platillos: 0, gaseosas: 0, bebidas: 0, extras: 0 };
+    const counts: Record<TabId, number> = { platillos: 0, gaseosas: 0, bebidas: 0, tragos: 0, extras: 0 };
     for (const p of initialProducts) counts[getTabForCategory(p.category || '')]++;
     return counts;
   }, [initialProducts]);

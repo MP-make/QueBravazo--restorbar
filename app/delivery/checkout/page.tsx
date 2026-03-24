@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { User, Phone, MapPin, Mail, ArrowLeft, CheckCircle, Copy, X, Banknote, Smartphone, CreditCard, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/stores/cart';
-import { createOrder } from '@/lib/api/ventify';
 import { useToastStore } from '@/lib/stores/toast';
 
 // Configuración de pagos - PERSONALIZA ESTOS DATOS
@@ -32,13 +31,10 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [operationNumber, setOperationNumber] = useState('');
   const [notes, setNotes] = useState('');
   
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
@@ -63,9 +59,6 @@ export default function CheckoutPage() {
 
   const handlePaymentSelect = (method: string) => {
     setPaymentMethod(method);
-    if (method === 'yape' || method === 'plin') {
-      setShowPaymentModal(true);
-    }
   };
 
   const handleUseCurrentLocation = async () => {
@@ -158,66 +151,51 @@ export default function CheckoutPage() {
       paymentMethod: !paymentMethod,
     };
     
-    // Si es Yape/Plin, validar número de operación
-    if ((paymentMethod === 'yape' || paymentMethod === 'plin') && !operationNumber.trim()) {
-      newErrors.operationNumber = true;
-    }
-    
     setErrors(newErrors);
 
     if (Object.values(newErrors).some(v => v)) {
       return;
     }
 
-    // Mostrar modal de autenticación ANTES de procesar
-    setShowAuthModal(true);
-  };
-
-  const handleContinueAsGuest = async () => {
-    setShowAuthModal(false);
+    // Procesar pedido directamente
     await processOrder();
   };
 
   const processOrder = async () => {
     setIsSubmitting(true);
     
-    // Construir nota con info de pago
-    const paymentNote = paymentMethod === 'efectivo' 
-      ? 'Pago: Efectivo contra entrega'
-      : `Pago: ${paymentMethod.toUpperCase()} - Nro. Operación: ${operationNumber}`;
-    
-    const fullNotes = [paymentNote, notes].filter(Boolean).join(' | ');
-
-    // Payload para Ventify API con estructura correcta
-    const payload = {
-      customer: {
-        name: customerName,
-        email: email || undefined,
-        phone: phone,
-        address: address,
-      },
-      notes: fullNotes,
-      paymentMethod: paymentMethod,
-      items: items.map(item => ({
-        id: item.id,
-        title: item.title,
-        quantity: item.quantity,
-        price: item.price,
-        notes: item.notes || '',
-      })),
-      total,
-    };
-
-    try {
-      await createOrder(payload);
-      setOrderSuccess(true);
-      clearCart();
-    } catch (error) {
-      console.error('Error confirming order:', error);
-      alert('Error al confirmar el pedido. Intenta de nuevo.');
-    } finally {
-      setIsSubmitting(false);
+    // Construir mensaje para WhatsApp
+    let message = `🍕 *NUEVO PEDIDO - ¡Qué Bravazo!*\n\n`;
+    message += `👤 *Cliente:* ${customerName}\n`;
+    message += `📱 *Teléfono:* +51 ${phone}\n`;
+    message += `📧 *Correo:* ${email || 'No proporcionado'}\n`;
+    message += `🏠 *Dirección:* ${address}\n`;
+    message += `💳 *Método de Pago:* ${paymentMethod.toUpperCase()}\n`;
+    message += `\n📋 *PRODUCTOS:*\n`;
+    items.forEach((item, index) => {
+      message += `${index + 1}. ${item.title} x${item.quantity} - S/ ${(item.price * item.quantity).toFixed(2)}\n`;
+      if (item.notes) {
+        message += `   Nota: ${item.notes}\n`;
+      }
+    });
+    message += `\n💰 *SUBTOTAL:* S/ ${subtotal.toFixed(2)}\n`;
+    message += `🚚 *DELIVERY:* S/ ${delivery.toFixed(2)}\n`;
+    message += `💵 *TOTAL:* S/ ${total.toFixed(2)}\n`;
+    if (notes) {
+      message += `\n📝 *NOTAS ADICIONALES:* ${notes}\n`;
     }
+    message += `\n✅ *PEDIDO CONFIRMADO*`;
+
+    // Codificar mensaje para URL
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/51946826535?text=${encodedMessage}`;
+
+    // Limpiar carrito y redirigir a WhatsApp
+    clearCart();
+    setOrderSuccess(true);
+    
+    // Redirigir a WhatsApp
+    window.location.href = whatsappUrl;
   };
 
   // Pantalla de éxito
@@ -228,16 +206,13 @@ export default function CheckoutPage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-stone-800 mb-2">¡Pedido Recibido!</h1>
+          <h1 className="text-2xl font-bold text-stone-800 mb-2">¡Pedido Enviado!</h1>
           <p className="text-stone-600 mb-6">
-            Tu pedido ha sido enviado correctamente. 
-            {paymentMethod !== 'efectivo' && ' Verificaremos tu pago y te contactaremos pronto.'}
-            {paymentMethod === 'efectivo' && ' Te contactaremos para coordinar la entrega.'}
+            Tu pedido ha sido enviado por WhatsApp. Te contactaremos pronto para confirmar.
           </p>
           <div className="bg-amber-50 rounded-xl p-4 mb-6">
             <p className="text-sm text-amber-800">
               <strong>Método de pago:</strong> {paymentMethod === 'efectivo' ? 'Efectivo contra entrega' : `${paymentMethod.toUpperCase()}`}
-              {operationNumber && <><br /><strong>Nro. Operación:</strong> {operationNumber}</>}
             </p>
           </div>
           <Link
@@ -295,21 +270,27 @@ export default function CheckoutPage() {
                   
                   <div>
                     <label className="block text-sm font-medium text-stone-700 mb-1">Teléfono / WhatsApp *</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, ''); // Solo números
-                        if (value.length === 0 || (value[0] === '9' && value.length <= 9)) {
-                          setPhone(value);
-                        }
-                      }}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-gray-900 ${
-                        errors.phone ? 'border-red-500 bg-red-50' : 'border-stone-200'
-                      }`}
-                      placeholder="999888777"
-                      maxLength={9}
-                    />
+                    <div className="flex">
+                      <div className="flex items-center px-3 py-3 bg-stone-100 border border-r-0 border-stone-200 rounded-l-xl">
+                        <span className="text-lg mr-1">🇵🇪</span>
+                        <span className="text-stone-600 font-medium">+51</span>
+                      </div>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, ''); // Solo números
+                          if (value.length === 0 || (value[0] === '9' && value.length <= 9)) {
+                            setPhone(value);
+                          }
+                        }}
+                        className={`flex-1 px-4 py-3 border rounded-r-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-gray-900 ${
+                          errors.phone ? 'border-red-500 bg-red-50' : 'border-stone-200'
+                        }`}
+                        placeholder="946826535"
+                        maxLength={9}
+                      />
+                    </div>
                     {errors.phone && <p className="text-red-500 text-sm mt-1">Debe ser un número de 9 dígitos que empiece con 9</p>}
                   </div>
                 </div>
@@ -426,32 +407,6 @@ export default function CheckoutPage() {
                   </button>
                 </div>
                 {errors.paymentMethod && <p className="text-red-500 text-sm mt-2">Selecciona un método de pago</p>}
-
-                {/* Número de operación (solo para Yape/Plin) */}
-                {(paymentMethod === 'yape' || paymentMethod === 'plin') && (
-                  <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                    <label className="block text-sm font-medium text-amber-800 mb-2">
-                      Número de Operación * (después de pagar)
-                    </label>
-                    <input
-                      type="text"
-                      value={operationNumber}
-                      onChange={(e) => setOperationNumber(e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent ${
-                        errors.operationNumber ? 'border-red-500 bg-red-50' : 'border-amber-300'
-                      }`}
-                      placeholder="Ej: 123456789"
-                    />
-                    {errors.operationNumber && <p className="text-red-500 text-sm mt-1">Ingresa el número de operación</p>}
-                    <button
-                      type="button"
-                      onClick={() => setShowPaymentModal(true)}
-                      className="mt-2 text-amber-700 hover:text-amber-800 text-sm font-medium underline"
-                    >
-                      Ver QR de pago nuevamente
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Notas */}
@@ -481,7 +436,7 @@ export default function CheckoutPage() {
                     Procesando...
                   </span>
                 ) : (
-                  `Confirmar Pedido - S/ ${total.toFixed(2)}`
+                  `Enviar Pedido por WhatsApp - S/ ${total.toFixed(2)}`
                 )}
               </button>
             </form>
@@ -525,169 +480,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-
-      {/* Modal de Pago Yape/Plin */}
-      {showPaymentModal && (paymentMethod === 'yape' || paymentMethod === 'plin') && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 relative">
-            <button 
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-stone-500" />
-            </button>
-
-            <div className={`text-center mb-6 ${paymentMethod === 'yape' ? 'text-purple-600' : 'text-teal-600'}`}>
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3 ${
-                paymentMethod === 'yape' ? 'bg-purple-600' : 'bg-teal-600'
-              }`}>
-                {paymentMethod === 'yape' ? 'Y' : 'P'}
-              </div>
-              <h3 className="text-xl font-bold">Pagar con {paymentMethod === 'yape' ? 'Yape' : 'Plin'}</h3>
-            </div>
-
-            {/* QR Code Placeholder */}
-            <div className="bg-stone-50 rounded-2xl p-4 mb-4">
-              <div className="aspect-square w-48 mx-auto bg-white rounded-xl flex items-center justify-center border-2 border-dashed border-stone-300">
-                <div className="text-center text-stone-400">
-                  <Smartphone className="w-12 h-12 mx-auto mb-2" />
-                  <p className="text-sm">Escanea el QR</p>
-                  <p className="text-xs">o usa el número</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Número de teléfono */}
-            <div className="bg-amber-50 rounded-xl p-4 mb-4">
-              <p className="text-sm text-amber-700 mb-1">Número de {paymentMethod === 'yape' ? 'Yape' : 'Plin'}:</p>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-amber-800">
-                  {paymentMethod === 'yape' ? PAYMENT_CONFIG.yape.numero : PAYMENT_CONFIG.plin.numero}
-                </span>
-                <button
-                  onClick={() => copyToClipboard(paymentMethod === 'yape' ? PAYMENT_CONFIG.yape.numero : PAYMENT_CONFIG.plin.numero)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    copied ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600 hover:bg-amber-200'
-                  }`}
-                >
-                  {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                </button>
-              </div>
-              <p className="text-sm text-amber-600 mt-1">
-                A nombre de: {paymentMethod === 'yape' ? PAYMENT_CONFIG.yape.nombre : PAYMENT_CONFIG.plin.nombre}
-              </p>
-            </div>
-
-            {/* Monto a pagar */}
-            <div className="text-center mb-4">
-              <p className="text-stone-500">Monto a pagar:</p>
-              <p className="text-3xl font-bold text-stone-800">S/ {total.toFixed(2)}</p>
-            </div>
-
-            <button
-              onClick={() => setShowPaymentModal(false)}
-              className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${
-                paymentMethod === 'yape' 
-                  ? 'bg-purple-600 hover:bg-purple-700' 
-                  : 'bg-teal-600 hover:bg-teal-700'
-              }`}
-            >
-              Ya realicé el pago
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Autenticación */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 relative animate-fade-in-up">
-            <button 
-              onClick={() => setShowAuthModal(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-stone-500" />
-            </button>
-
-            {/* Icono y título */}
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <User className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-stone-800 mb-2">
-                ¡Un paso más!
-              </h3>
-              <p className="text-stone-600 text-sm">
-                Crea una cuenta para obtener beneficios exclusivos
-              </p>
-            </div>
-
-            {/* Beneficios */}
-            <div className="bg-amber-50 rounded-xl p-4 mb-6">
-              <p className="text-sm font-semibold text-amber-800 mb-2">🎁 Beneficios de registrarte:</p>
-              <ul className="space-y-1 text-xs text-amber-700">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                  Descuentos exclusivos en tu próxima compra
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                  Acumula puntos con cada pedido
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                  Historial de pedidos y favoritos
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                  Pedidos más rápidos con tus datos guardados
-                </li>
-              </ul>
-            </div>
-
-            {/* Opciones */}
-            <div className="space-y-3">
-              {/* Registrarse */}
-              <Link
-                href="/register"
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-center transition-all shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2"
-              >
-                <User className="w-5 h-5" />
-                Registrarme ahora
-              </Link>
-
-              {/* Iniciar sesión */}
-              <Link
-                href="/login"
-                className="w-full bg-white hover:bg-stone-50 text-stone-800 py-4 rounded-xl font-semibold text-center transition-all border-2 border-stone-200 hover:border-stone-300 flex items-center justify-center gap-2"
-              >
-                <User className="w-5 h-5" />
-                Ya tengo cuenta
-              </Link>
-
-              {/* Continuar sin cuenta */}
-              <button
-                onClick={handleContinueAsGuest}
-                disabled={isSubmitting}
-                className="w-full bg-stone-100 hover:bg-stone-200 text-stone-600 py-3 rounded-xl font-medium text-center transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Procesando pedido...
-                  </span>
-                ) : (
-                  'Continuar sin cuenta'
-                )}
-              </button>
-            </div>
-
-            <p className="text-xs text-center text-stone-500 mt-4">
-              Puedes crear una cuenta después para acceder a todos los beneficios
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
