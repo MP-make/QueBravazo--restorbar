@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "¡Qué Bravazo! Restobar",
   description: "Restobar de comida rápida peruana — Broaster, hamburguesas, alitas BBQ, cervezas y más. Delivery en Lima.",
+  icons: {
+    icon: "/BRAVAZO-LOGO.jpeg",
+    shortcut: "/BRAVAZO-LOGO.jpeg",
+    apple: "/BRAVAZO-LOGO.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -25,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="icon" href="/BRAVAZO-LOGO.jpeg" sizes="any" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >

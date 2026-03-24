@@ -4,20 +4,34 @@ import Link from "next/link";
 import { ShoppingBag, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const SLIDES = [
-  { type: "image", src: "/principal.png" },
-  { type: "video", src: "/FLYER VIDEO HERO BRAVAZO.mp4" },
-  { type: "video", src: "/flyer 2.mp4" },
-] as const;
+// Hook para detectar si es movil
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkIsMobile = () => setIsMobile(window.innerWidth < 768);
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
+  return isMobile;
+}
 
 export default function HeroBanner() {
+  const isMobile = useIsMobile();
   const [current, setCurrent] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Definimos los slides dinámicamente según isMobile para cargar el video correcto
+  const SLIDES = [
+    { type: "image", src: "/principal.png" },
+    { type: "video", src: isMobile ? "/alitas - vertical.mp4" : "/alitas - horizontal.mp4" },
+    { type: "video", src: isMobile ? "/HAMBURGUESAS - VERTICAL.mp4" : "/HAMBURGUESAS - HORIZONTAL.mp4" },
+  ] as const;
+
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % SLIDES.length);
-  }, []);
+  }, [SLIDES.length]);
 
   // Todos los slides duran 10s — videos también tienen fallback de 10s
   useEffect(() => {
@@ -38,7 +52,7 @@ export default function HeroBanner() {
         vid.currentTime = 0;
       }
     });
-  }, [current]);
+  }, [current, isMobile]);
 
   const scrollToContent = () => {
     document.getElementById("productos-destacados")

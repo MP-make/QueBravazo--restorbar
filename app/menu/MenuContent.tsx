@@ -84,13 +84,13 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
       <header className="sticky top-0 z-40 bg-[#1a1a1a] shadow-2xl">
 
         {/* Fila única: logo | buscador | carrito */}
-        <div className="max-w-5xl mx-auto px-4 h-[60px] flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 h-[60px] flex items-center gap-3">
 
           {/* Logo + nombre */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
             <div className="relative w-9 h-9 flex-shrink-0">
               <Image
-                src="/bravazo-logo.jpeg"
+                src="/BRAVAZO-LOGO.jpeg"
                 alt="¡Qué Bravazo!"
                 fill
                 className="rounded-full object-cover ring-2 ring-amber-500"
@@ -142,7 +142,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
 
         {/* Tab bar */}
         <div className="border-t border-white/10">
-          <div className="max-w-5xl mx-auto px-2 flex overflow-x-auto scrollbar-hide">
+          <div className="max-w-7xl mx-auto px-2 flex overflow-x-auto scrollbar-hide">
             {TABS.map((tab) => {
               const count = tabCounts[tab.id];
               const isActive = !search && activeTab === tab.id;
@@ -175,7 +175,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
       {/* ══════════════════════════════════════════════════════
           CONTENIDO
       ══════════════════════════════════════════════════════ */}
-      <main className="max-w-5xl mx-auto px-4 py-5 pb-32">
+      <main className="max-w-7xl mx-auto px-4 py-5 pb-32">
 
         {/* Banner del tab activo */}
         {!search && (

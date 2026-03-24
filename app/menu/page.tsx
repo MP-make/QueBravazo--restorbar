@@ -3,7 +3,13 @@ import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import MenuContent from './MenuContent';
 
 async function getProducts() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  // Usar NEXT_PUBLIC_BASE_URL, o la URL automática de Vercel, o localhost
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
+    ? process.env.NEXT_PUBLIC_BASE_URL 
+    : process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000';
+
   try {
     const res = await fetch(`${baseUrl}/api/products`, { cache: 'no-store' });
     if (!res.ok) return [];

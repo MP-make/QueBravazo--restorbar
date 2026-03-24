@@ -99,11 +99,11 @@ export default function ContactoSection() {
             <div>
               <h4 className="font-semibold mb-4">Síguenos en redes 📲</h4>
               <div className="flex gap-4">
-                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.instagram.com/quebravazorestobar/" target="_blank" rel="noopener noreferrer"
                   className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-full hover:scale-110 transition-transform shadow-lg" aria-label="Instagram">
                   <Instagram className="w-6 h-6" />
                 </a>
-                <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.facebook.com/quebravazorestobar" target="_blank" rel="noopener noreferrer"
                   className="bg-blue-600 p-3 rounded-full hover:scale-110 transition-transform shadow-lg" aria-label="Facebook">
                   <Facebook className="w-6 h-6" />
                 </a>
