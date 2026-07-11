@@ -2,10 +2,11 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, X, Home, MessageCircle, UtensilsCrossed, MapPin } from 'lucide-react';
+import { Search, ShoppingBag, X, Plus, Home, MessageCircle, UtensilsCrossed, MapPin } from 'lucide-react';
 import { useSearchStore } from '@/lib/stores/search';
 import { useCartStore } from '@/lib/stores/cart';
 import { useUIStore } from '@/lib/stores/ui';
+import { useToastStore } from '@/lib/stores/toast';
 import { usePathname, useRouter } from 'next/navigation';
 import { fetchProducts } from '@/lib/api/ventify';
 
@@ -18,8 +19,9 @@ export default function Navbar() {
     query, results, isOpen,
     setQuery, setIsOpen, clearSearch, setAllProducts,
   } = useSearchStore();
-  const { items } = useCartStore();
+  const { items, addItem } = useCartStore();
   const { setIsCartOpen } = useUIStore();
+  const { addToast } = useToastStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -266,14 +268,26 @@ export default function Navbar() {
                             <p className="text-stone-400 text-xs">{product.category}</p>
                           </div>
 
-                          {/* Price */}
-                          <div className="flex-shrink-0 text-right">
-                            <p className="text-amber-600 font-bold text-sm">S/ {product.price.toFixed(2)}</p>
-                            {product.featured && (
-                              <span className="text-[10px] bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded-full">
-                                Destacado
-                              </span>
-                            )}
+                          {/* Price + Add */}
+                          <div className="flex-shrink-0 flex items-center gap-2">
+                            <div className="text-right">
+                              <p className="text-amber-600 font-bold text-sm">S/ {product.price.toFixed(2)}</p>
+                              {product.featured && (
+                                <span className="text-[10px] bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded-full">
+                                  Destacado
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addItem(product);
+                                addToast(`${product.title} agregado al carrito`, 'success');
+                              }}
+                              className="w-7 h-7 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0"
+                            >
+                              <Plus className="w-4 h-4" strokeWidth={3} />
+                            </button>
                           </div>
                         </button>
                       </li>
