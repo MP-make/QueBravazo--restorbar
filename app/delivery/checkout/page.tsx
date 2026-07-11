@@ -248,21 +248,21 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8">
           {/* Resumen del Pedido — first in DOM so it appears on top on mobile */}
-          <div className="sticky top-14 z-10 lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
-            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
-              <h3 className="text-lg md:text-xl font-bold text-stone-800 mb-4">Tu Pedido</h3>
+          <div className="lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
+            <div className="bg-white rounded-2xl shadow-sm p-3 sm:p-5">
+              <h3 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4">Tu Pedido</h3>
               
-              <div className="space-y-3 mb-6 max-h-48 overflow-y-auto">
+              <div className="space-y-2 md:space-y-3 mb-4 md:mb-6 max-h-36 md:max-h-48 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 p-2 bg-stone-50 rounded-lg">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
+                  <div key={item.id} className="flex items-center gap-2 md:gap-3 p-1.5 md:p-2 bg-stone-50 rounded-lg">
+                    <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
                       <Image src={item.image || '/logo_que_bravazo.png'} alt={item.title} fill className="object-cover" sizes="48px" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-stone-800 truncate">{item.title}</p>
-                      <p className="text-sm text-stone-500">x{item.quantity}</p>
+                      <p className="text-sm md:font-medium text-stone-800 truncate">{item.title}</p>
+                      <p className="text-xs md:text-sm text-stone-500">x{item.quantity}</p>
                     </div>
-                    <p className="font-bold text-amber-600">S/ {(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-sm md:font-bold text-amber-600">S/ {(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
@@ -281,18 +281,18 @@ export default function CheckoutPage() {
                 </div>
               </div>
               
-              <div className="border-t border-stone-200 pt-4 space-y-2">
-                <div className="flex justify-between text-stone-600">
+              <div className="border-t border-stone-200 pt-3 md:pt-4 space-y-1.5 md:space-y-2">
+                <div className="flex justify-between text-xs md:text-base text-stone-600">
                   <span>Subtotal</span>
                   <span className="font-medium">S/ {subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-stone-600">
-                  <span>Delivery {isJardines && <span className="text-emerald-600 text-xs font-semibold">(Urb. Jardines)</span>}</span>
+                <div className="flex justify-between text-xs md:text-base text-stone-600">
+                  <span>Delivery {isJardines && <span className="text-emerald-600 text-[10px] md:text-xs font-semibold">(Urb. Jardines)</span>}</span>
                   <span className={`font-medium ${isJardines ? 'text-emerald-600' : ''}`}>
                     {isJardines ? 'Gratis' : `S/ ${delivery.toFixed(2)}`}
                   </span>
                 </div>
-                <div className="flex justify-between text-xl font-bold text-stone-800 pt-2 border-t border-stone-200">
+                <div className="flex justify-between text-base md:text-xl font-bold text-stone-800 pt-1.5 md:pt-2 border-t border-stone-200">
                   <span>Total</span>
                   <span className="text-amber-600">S/ {total.toFixed(2)}</span>
                 </div>
@@ -302,35 +302,35 @@ export default function CheckoutPage() {
 
           {/* Formulario — second in DOM, scrolls below summary on mobile */}
           <div className="lg:col-start-1 lg:col-end-3 lg:row-start-1">
-            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6">
               {/* Datos de contacto */}
-              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5 text-amber-600" />
+              <div className="bg-white rounded-2xl shadow-sm p-3 md:p-6">
+                <h2 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4 flex items-center gap-2">
+                  <User className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
                   Datos de Contacto
                 </h2>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-stone-700 mb-1">Nombre Completo *</label>
-                    <input
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900 ${
-                        errors.name ? 'border-red-500 bg-red-50' : 'border-stone-200'
-                      }`}
-                      placeholder="Juan Pérez"
-                    />
-                    {errors.name && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm md:text-base text-stone-900 ${
+                          errors.name ? 'border-red-500 bg-red-50' : 'border-stone-200'
+                        }`}
+                        placeholder="Juan Pérez"
+                      />
+                    {errors.name && <p className="text-red-500 text-xs md:text-sm mt-1">Campo obligatorio</p>}
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-stone-700 mb-1">Teléfono / WhatsApp *</label>
                     <div className="flex">
-                      <div className="flex items-center px-3 py-3 bg-stone-100 border border-r-0 border-stone-200 rounded-l-xl">
-                        <span className="text-lg mr-1">🇵🇪</span>
-                        <span className="text-stone-600 font-medium">+51</span>
+                      <div className="flex items-center px-2.5 md:px-3 py-2.5 md:py-3 bg-stone-100 border border-r-0 border-stone-200 rounded-l-xl">
+                        <span className="text-base md:text-lg mr-1">🇵🇪</span>
+                        <span className="text-stone-600 text-sm md:text-base font-medium">+51</span>
                       </div>
                       <input
                         type="tel"
@@ -341,7 +341,7 @@ export default function CheckoutPage() {
                             setPhone(value);
                           }
                         }}
-                        className={`flex-1 px-4 py-3 border rounded-r-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-gray-900 ${
+                        className={`flex-1 px-3 md:px-4 py-2.5 md:py-3 border rounded-r-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm md:text-base text-gray-900 ${
                           errors.phone ? 'border-red-500 bg-red-50' : 'border-stone-200'
                         }`}
                         placeholder="946826535"
@@ -352,21 +352,21 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Correo (opcional)</label>
+                <div className="mt-3 md:mt-4">
+                  <label className="block text-xs md:text-sm font-medium text-stone-700 mb-1">Correo (opcional)</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900"
+                    className="w-full px-3 md:px-4 py-2.5 md:py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm md:text-base text-stone-900"
                     placeholder="correo@ejemplo.com"
                   />
                 </div>
               </div>
 
               {/* Dirección */}
-              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-lg md:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-2xl shadow-sm p-3 md:p-6">
+                <h2 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4 flex items-center gap-2">
                   <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
                   Dirección de Entrega
                 </h2>
@@ -381,7 +381,7 @@ export default function CheckoutPage() {
                       setJardinesLote('');
                     }
                   }}
-                  className={`w-full p-3 sm:p-4 border-2 rounded-xl flex items-center gap-2 sm:gap-3 transition-all mb-4 ${
+                  className={`w-full p-2.5 md:p-4 border-2 rounded-xl flex items-center gap-2 md:gap-3 transition-all mb-3 md:mb-4 ${
                     isJardines
                       ? 'border-emerald-500 bg-emerald-50'
                       : 'border-stone-200 hover:border-stone-300 bg-white'
@@ -411,30 +411,30 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-stone-700 mb-1">Manzana *</label>
+                        <label className="block text-xs md:text-sm font-medium text-stone-700 mb-1">Manzana *</label>
                         <input
                           type="text"
                           value={jardinesManzana}
                           onChange={(e) => setJardinesManzana(e.target.value.toUpperCase())}
-                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900 ${
+                          className={`w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm md:text-base text-stone-900 ${
                             errors.jardinesManzana ? 'border-red-500 bg-red-50' : 'border-stone-200'
                           }`}
                           placeholder="Ej: A, B, C..."
                         />
-                        {errors.jardinesManzana && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+                        {errors.jardinesManzana && <p className="text-red-500 text-xs md:text-sm mt-1">Campo obligatorio</p>}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-stone-700 mb-1">Lote *</label>
+                        <label className="block text-xs md:text-sm font-medium text-stone-700 mb-1">Lote *</label>
                         <input
                           type="text"
                           value={jardinesLote}
                           onChange={(e) => setJardinesLote(e.target.value)}
-                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900 ${
+                          className={`w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm md:text-base text-stone-900 ${
                             errors.jardinesLote ? 'border-red-500 bg-red-50' : 'border-stone-200'
                           }`}
                           placeholder="Ej: 1, 2, 3..."
                         />
-                        {errors.jardinesLote && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+                        {errors.jardinesLote && <p className="text-red-500 text-xs md:text-sm mt-1">Campo obligatorio</p>}
                       </div>
                     </div>
                     {jardinesManzana && jardinesLote && (
@@ -450,33 +450,33 @@ export default function CheckoutPage() {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       rows={3}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none text-stone-900 ${
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none text-sm md:text-base text-stone-900 ${
                         errors.address ? 'border-red-500 bg-red-50' : 'border-stone-200'
                       }`}
                       placeholder="Av. Principal 123, Urbanización, Distrito..."
                     />
-                    {errors.address && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+                    {errors.address && <p className="text-red-500 text-xs md:text-sm mt-1">Campo obligatorio</p>}
 
                     <button
                       type="button"
                       onClick={handleUseCurrentLocation}
                       disabled={isLoadingLocation}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-amber-700 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isLoadingLocation ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 md:w-4 md:h-4 animate-spin" />
                           Detectando ubicación...
                         </>
                       ) : (
                         <>
-                          <MapPin className="w-4 h-4" />
+                          <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4" />
                           📍 Usar ubicación actual
                         </>
                       )}
                     </button>
 
-                    <p className="text-[11px] text-stone-400 italic leading-relaxed mt-1">
+                    <p className="text-[10px] md:text-[11px] text-stone-400 italic leading-relaxed mt-1">
                       * compartenos tu ubicación actual por WhatsApp para ubicarte mejor
                     </p>
                   </div>
@@ -484,67 +484,67 @@ export default function CheckoutPage() {
               </div>
 
               {/* Método de Pago */}
-              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-lg md:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-2xl shadow-sm p-3 md:p-6">
+                <h2 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
                   Método de Pago
                 </h2>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-1.5 md:gap-3">
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('efectivo')}
-                    className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition-all ${
+                    className={`p-2 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
                       paymentMethod === 'efectivo' 
                         ? 'border-amber-500 bg-amber-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <Banknote className={`w-8 h-8 ${paymentMethod === 'efectivo' ? 'text-amber-600' : 'text-stone-400'}`} />
-                    <span className={`font-medium ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
+                    <Banknote className={`w-5 h-5 md:w-8 md:h-8 ${paymentMethod === 'efectivo' ? 'text-amber-600' : 'text-stone-400'}`} />
+                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('yape')}
-                    className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition-all ${
+                    className={`p-2 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
                       paymentMethod === 'yape' 
                         ? 'border-purple-500 bg-purple-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className="w-8 h-8 relative">
+                    <div className="w-5 h-5 md:w-8 md:h-8 relative">
                       <Image src="/icono-yape.png" alt="Yape" fill className="object-contain" />
                     </div>
-                    <span className={`font-medium ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
+                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('plin')}
-                    className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition-all ${
+                    className={`p-2 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
                       paymentMethod === 'plin' 
                         ? 'border-teal-500 bg-teal-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className="w-8 h-8 relative">
+                    <div className="w-5 h-5 md:w-8 md:h-8 relative">
                       <Image src="/icono-plin.png" alt="Plin" fill className="object-contain" />
                     </div>
-                    <span className={`font-medium ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
+                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
                   </button>
                 </div>
-                {errors.paymentMethod && <p className="text-red-500 text-sm mt-2">Selecciona un método de pago</p>}
+                {errors.paymentMethod && <p className="text-red-500 text-xs md:text-sm mt-2">Selecciona un método de pago</p>}
               </div>
 
               {/* Notas */}
-              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
-                <h2 className="text-lg md:text-xl font-bold text-stone-800 mb-4">Notas adicionales <span className="text-stone-400 font-normal">(opcional)</span></h2>
+              <div className="bg-white rounded-2xl shadow-sm p-3 md:p-6">
+                <h2 className="text-sm md:text-xl font-bold text-stone-800 mb-3 md:mb-4">Notas adicionales <span className="text-stone-400 font-normal">(opcional)</span></h2>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none text-stone-900"
+                  className="w-full px-3 md:px-4 py-2.5 md:py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none text-sm md:text-base text-stone-900"
                   placeholder="Ej: Sin cebolla, extra salsa, tocar timbre..."
                 />
               </div>
@@ -552,7 +552,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3.5 md:py-4 rounded-xl font-bold text-sm md:text-lg shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 md:py-4 rounded-xl font-bold text-sm md:text-lg shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -563,7 +563,7 @@ export default function CheckoutPage() {
                     Procesando...
                   </span>
                 ) : (
-                  `Enviar Pedido por WhatsApp - S/ ${total.toFixed(2)}`
+                  `Pedir por WhatsApp - S/ ${total.toFixed(2)}`
                 )}
               </button>
             </form>
