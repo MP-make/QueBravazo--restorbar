@@ -248,7 +248,7 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8">
           {/* Resumen del Pedido — first in DOM so it appears on top on mobile */}
-          <div className="lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
+          <div className="sticky top-14 z-10 lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
             <div className="bg-white rounded-2xl shadow-sm p-3 sm:p-5">
               <h3 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4">Tu Pedido</h3>
               
@@ -490,48 +490,48 @@ export default function CheckoutPage() {
                   Método de Pago
                 </h2>
                 
-                <div className="grid grid-cols-3 gap-1 md:gap-3">
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('efectivo')}
-                    className={`p-1.5 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
+                    className={`p-2.5 md:p-4 border rounded-xl md:border-2 flex flex-col items-center gap-1 md:gap-2 transition-all ${
                       paymentMethod === 'efectivo' 
                         ? 'border-amber-500 bg-amber-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <Banknote className={`w-4 h-4 md:w-8 md:h-8 ${paymentMethod === 'efectivo' ? 'text-amber-600' : 'text-stone-400'}`} />
-                    <span className={`text-[9px] md:text-base font-medium leading-tight ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
+                    <Banknote className={`w-5 h-5 md:w-8 md:h-8 ${paymentMethod === 'efectivo' ? 'text-amber-600' : 'text-stone-400'}`} />
+                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('yape')}
-                    className={`p-1.5 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
+                    className={`p-2.5 md:p-4 border rounded-xl md:border-2 flex flex-col items-center gap-1 md:gap-2 transition-all ${
                       paymentMethod === 'yape' 
                         ? 'border-purple-500 bg-purple-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className="w-4 h-4 md:w-8 md:h-8 relative">
+                    <div className="w-5 h-5 md:w-8 md:h-8 relative">
                       <Image src="/icono-yape.png" alt="Yape" fill className="object-contain" />
                     </div>
-                    <span className={`text-[9px] md:text-base font-medium leading-tight ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
+                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('plin')}
-                    className={`p-1.5 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
+                    className={`p-2.5 md:p-4 border rounded-xl md:border-2 flex flex-col items-center gap-1 md:gap-2 transition-all ${
                       paymentMethod === 'plin' 
                         ? 'border-teal-500 bg-teal-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className="w-4 h-4 md:w-8 md:h-8 relative">
+                    <div className="w-5 h-5 md:w-8 md:h-8 relative">
                       <Image src="/icono-plin.png" alt="Plin" fill className="object-contain" />
                     </div>
-                    <span className={`text-[9px] md:text-base font-medium leading-tight ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
+                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
                   </button>
                 </div>
                 {errors.paymentMethod && <p className="text-red-500 text-xs md:text-sm mt-2">Selecciona un método de pago</p>}

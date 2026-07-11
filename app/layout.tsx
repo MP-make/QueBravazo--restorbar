@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   title: "¡Qué Bravazo! Restobar",
   description: "Restobar de comida rápida peruana — Broaster, hamburguesas, alitas BBQ, cervezas y más. Delivery en Lima.",
   icons: {
-    icon: "/logo_que_bravazo.png",
-    shortcut: "/logo_que_bravazo.png",
-    apple: "/logo_que_bravazo.png",
+    icon: [
+      { url: "/icon.jpg", sizes: "any", type: "image/jpeg" },
+    ],
   },
 };
 
@@ -30,9 +30,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <head>
-        <link rel="icon" href="/logo_que_bravazo.png" sizes="any" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
