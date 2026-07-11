@@ -490,48 +490,48 @@ export default function CheckoutPage() {
                   Método de Pago
                 </h2>
                 
-                <div className="grid grid-cols-3 gap-1.5 md:gap-3">
+                <div className="grid grid-cols-3 gap-1 md:gap-3">
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('efectivo')}
-                    className={`p-2 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
+                    className={`p-1.5 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
                       paymentMethod === 'efectivo' 
                         ? 'border-amber-500 bg-amber-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <Banknote className={`w-5 h-5 md:w-8 md:h-8 ${paymentMethod === 'efectivo' ? 'text-amber-600' : 'text-stone-400'}`} />
-                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
+                    <Banknote className={`w-4 h-4 md:w-8 md:h-8 ${paymentMethod === 'efectivo' ? 'text-amber-600' : 'text-stone-400'}`} />
+                    <span className={`text-[9px] md:text-base font-medium leading-tight ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('yape')}
-                    className={`p-2 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
+                    className={`p-1.5 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
                       paymentMethod === 'yape' 
                         ? 'border-purple-500 bg-purple-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className="w-5 h-5 md:w-8 md:h-8 relative">
+                    <div className="w-4 h-4 md:w-8 md:h-8 relative">
                       <Image src="/icono-yape.png" alt="Yape" fill className="object-contain" />
                     </div>
-                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
+                    <span className={`text-[9px] md:text-base font-medium leading-tight ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('plin')}
-                    className={`p-2 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
+                    className={`p-1.5 md:p-4 border rounded-lg md:border-2 md:rounded-xl flex flex-col items-center gap-0.5 md:gap-2 transition-all ${
                       paymentMethod === 'plin' 
                         ? 'border-teal-500 bg-teal-50' 
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className="w-5 h-5 md:w-8 md:h-8 relative">
+                    <div className="w-4 h-4 md:w-8 md:h-8 relative">
                       <Image src="/icono-plin.png" alt="Plin" fill className="object-contain" />
                     </div>
-                    <span className={`text-[10px] md:text-base font-medium leading-tight ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
+                    <span className={`text-[9px] md:text-base font-medium leading-tight ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
                   </button>
                 </div>
                 {errors.paymentMethod && <p className="text-red-500 text-xs md:text-sm mt-2">Selecciona un método de pago</p>}
