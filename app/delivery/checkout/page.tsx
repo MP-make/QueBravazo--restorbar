@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { User, Phone, MapPin, Mail, ArrowLeft, CheckCircle, Copy, X, Banknote, Smartphone, CreditCard, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { User, MapPin, ArrowLeft, CheckCircle, Banknote, CreditCard, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/stores/cart';
 import { useToastStore } from '@/lib/stores/toast';
@@ -32,18 +32,25 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Jardines de San Andrés state
+  const [isJardines, setIsJardines] = useState(false);
+  const [jardinesManzana, setJardinesManzana] = useState('');
+  const [jardinesLote, setJardinesLote] = useState('');
   
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
-  const [copied, setCopied] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   // Cálculos SIN IGV
   const subtotal = getTotal();
-  const delivery = PAYMENT_CONFIG.deliveryCost;
+  const delivery = isJardines ? 0 : PAYMENT_CONFIG.deliveryCost;
   const total = subtotal + delivery;
+  const jardinesAddress = isJardines
+    ? `Urb. Los Jardines de San Andrés - Mz ${jardinesManzana}, Lt ${jardinesLote}`
+    : '';
 
   useEffect(() => {
     if (items.length === 0 && !orderSuccess) {
@@ -51,14 +58,46 @@ export default function CheckoutPage() {
     }
   }, [items.length, router, orderSuccess]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text.replace(/\s/g, ''));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handlePaymentSelect = (method: string) => {
     setPaymentMethod(method);
+  };
+
+  const reverseGeocode = async (latitude: number, longitude: number, retries = 2): Promise<string> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+          { headers: { 'Accept-Language': 'es' } }
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!data || !data.address) throw new Error('Sin datos de dirección');
+
+        const addr = data.address;
+        const parts: string[] = [];
+        if (addr.road) {
+          let road = addr.road;
+          if (addr.house_number) road += ` ${addr.house_number}`;
+          parts.push(road);
+        }
+        if (addr.suburb || addr.neighbourhood) parts.push(addr.suburb || addr.neighbourhood);
+        if (addr.city_district) parts.push(addr.city_district);
+        parts.push(addr.city || addr.town || addr.village || addr.municipality || '');
+        if (addr.state && !parts.some(p => p.includes(addr.state!))) parts.push(addr.state);
+        if (data.display_name?.includes('Perú') && !parts.some(p => p.includes('Perú'))) parts.push('Perú');
+
+        const formatted = parts.filter(Boolean).join(', ');
+        if (formatted) return formatted;
+        return data.display_name || '';
+      } catch (err) {
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        throw err;
+      }
+    }
+    return '';
   };
 
   const handleUseCurrentLocation = async () => {
@@ -68,74 +107,36 @@ export default function CheckoutPage() {
     }
 
     setIsLoadingLocation(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        
-        try {
-          // Geocoding inverso usando OpenStreetMap Nominatim
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
-            {
-              headers: {
-                'Accept-Language': 'es',
-              }
-            }
-          );
-          
-          if (!response.ok) {
-            throw new Error('Error al obtener la dirección');
-          }
-          
-          const data = await response.json();
-          
-          // Construir dirección desde los datos
-          const addressParts = [];
-          if (data.address.road) addressParts.push(data.address.road);
-          if (data.address.house_number) addressParts.push(data.address.house_number);
-          if (data.address.suburb) addressParts.push(data.address.suburb);
-          if (data.address.city || data.address.town) addressParts.push(data.address.city || data.address.town);
-          if (data.address.state) addressParts.push(data.address.state);
-          
-          const formattedAddress = addressParts.length > 0 
-            ? addressParts.join(', ')
-            : data.display_name;
-          
-          setAddress(formattedAddress);
-          addToast('Ubicación detectada correctamente', 'success');
-        } catch (error) {
-          console.error('Error en geocoding inverso:', error);
-          addToast('Error al obtener la dirección. Por favor, ingrésala manualmente', 'error');
-        } finally {
-          setIsLoadingLocation(false);
-        }
-      },
-      (error) => {
-        console.error('Error de geolocalización:', error);
-        let errorMessage = 'No pudimos detectar tu ubicación, ingrésala manualmente';
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Permiso de ubicación denegado. Actívalo en tu navegador';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Ubicación no disponible. Verifica tu GPS';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Tiempo agotado al buscar ubicación';
-            break;
-        }
-        
-        addToast(errorMessage, 'error');
-        setIsLoadingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      const formatted = await reverseGeocode(latitude, longitude);
+
+      if (formatted) {
+        setAddress(formatted);
+        addToast('Ubicación detectada correctamente', 'success');
+      } else {
+        addToast('No se pudo determinar la dirección. Intenta ingresarla manualmente', 'error');
       }
-    );
+    } catch (err: unknown) {
+      console.error('Error de geolocalización:', err);
+      const errCode = (err as { code?: number })?.code;
+      let msg = 'No pudimos detectar tu ubicación, ingrésala manualmente';
+      if (errCode === 1) msg = 'Permiso de ubicación denegado. Actívalo en tu navegador';
+      else if (errCode === 2) msg = 'Ubicación no disponible. Verifica tu GPS';
+      else if (errCode === 3) msg = 'Tiempo agotado. Intenta de nuevo';
+      addToast(msg, 'error');
+    } finally {
+      setIsLoadingLocation(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,7 +147,9 @@ export default function CheckoutPage() {
     const newErrors: Record<string, boolean> = {
       name: !customerName.trim(),
       phone: phone.length !== 9 || !phone.startsWith('9'),
-      address: !address.trim(),
+      address: isJardines ? false : !address.trim(),
+      jardinesManzana: isJardines ? !jardinesManzana.trim() : false,
+      jardinesLote: isJardines ? !jardinesLote.trim() : false,
       email: !!email && !(/^[^\s@]+@[^\s@]+\.(com|pe)$/i.test(email)),
       paymentMethod: !paymentMethod,
     };
@@ -169,7 +172,7 @@ export default function CheckoutPage() {
     message += `👤 *Cliente:* ${customerName}\n`;
     message += `📱 *Teléfono:* +51 ${phone}\n`;
     message += `📧 *Correo:* ${email || 'No proporcionado'}\n`;
-    message += `🏠 *Dirección:* ${address}\n`;
+    message += `🏠 *Dirección:* ${isJardines ? jardinesAddress : address}\n`;
     message += `💳 *Método de Pago:* ${paymentMethod.toUpperCase()}\n`;
     message += `\n📋 *PRODUCTOS:*\n`;
     items.forEach((item, index) => {
@@ -232,22 +235,76 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50 py-4 md:py-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/" className="p-2 hover:bg-white rounded-full transition-colors">
-            <ArrowLeft className="w-6 h-6 text-stone-600" />
+        <div className="sticky top-0 z-10 bg-gradient-to-br from-stone-50 to-amber-50 py-3 -mx-3 sm:-mx-4 px-3 sm:px-4 md:px-0 md:static md:bg-none md:py-0 md:mx-0 mb-6 md:mb-8 flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-stone-600 hover:text-stone-900 hover:border-stone-300 hover:shadow-sm transition-all font-medium text-sm">
+            <ArrowLeft className="w-4 h-4" />
+            Volver
           </Link>
-          <h1 className="text-3xl font-bold text-stone-800">Finalizar Pedido</h1>
+          <h1 className="text-xl md:text-3xl font-bold text-stone-800">Finalizar Pedido</h1>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Formulario */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8">
+          {/* Resumen del Pedido — first in DOM so it appears on top on mobile */}
+          <div className="sticky top-14 z-10 lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
+            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+              <h3 className="text-lg md:text-xl font-bold text-stone-800 mb-4">Tu Pedido</h3>
+              
+              <div className="space-y-3 mb-6 max-h-48 overflow-y-auto">
+                {items.map((item) => (
+                  <div key={item.id} className="flex items-center gap-3 p-2 bg-stone-50 rounded-lg">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
+                      <Image src={item.image || '/logo_que_bravazo.png'} alt={item.title} fill className="object-cover" sizes="48px" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-stone-800 truncate">{item.title}</p>
+                      <p className="text-sm text-stone-500">x{item.quantity}</p>
+                    </div>
+                    <p className="font-bold text-amber-600">S/ {(item.price * item.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Datos en vivo ────────────────────────────── */}
+              <div className="border-t border-stone-200 pt-3 mb-3 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-stone-400">Dirección</span>
+                  <span className="font-medium text-stone-700 text-right max-w-[60%] truncate">{isJardines ? jardinesAddress : (address || <span className="text-stone-300 italic">—</span>)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-stone-400">Pago</span>
+                  <span className={`font-medium capitalize text-right ${paymentMethod ? 'text-amber-600' : 'text-stone-300 italic'}`}>
+                    {paymentMethod === 'efectivo' ? 'Efectivo' : paymentMethod || '—'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="border-t border-stone-200 pt-4 space-y-2">
+                <div className="flex justify-between text-stone-600">
+                  <span>Subtotal</span>
+                  <span className="font-medium">S/ {subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-stone-600">
+                  <span>Delivery {isJardines && <span className="text-emerald-600 text-xs font-semibold">(Urb. Jardines)</span>}</span>
+                  <span className={`font-medium ${isJardines ? 'text-emerald-600' : ''}`}>
+                    {isJardines ? 'Gratis' : `S/ ${delivery.toFixed(2)}`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xl font-bold text-stone-800 pt-2 border-t border-stone-200">
+                  <span>Total</span>
+                  <span className="text-amber-600">S/ {total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Formulario — second in DOM, scrolls below summary on mobile */}
+          <div className="lg:col-start-1 lg:col-end-3 lg:row-start-1">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               {/* Datos de contacto */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
                 <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
                   <User className="w-5 h-5 text-amber-600" />
                   Datos de Contacto
@@ -260,7 +317,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900 ${
                         errors.name ? 'border-red-500 bg-red-50' : 'border-stone-200'
                       }`}
                       placeholder="Juan Pérez"
@@ -279,7 +336,7 @@ export default function CheckoutPage() {
                         type="tel"
                         value={phone}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, ''); // Solo números
+                          const value = e.target.value.replace(/[^0-9]/g, '');
                           if (value.length === 0 || (value[0] === '9' && value.length <= 9)) {
                             setPhone(value);
                           }
@@ -301,62 +358,139 @@ export default function CheckoutPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900"
                     placeholder="correo@ejemplo.com"
                   />
                 </div>
               </div>
 
               {/* Dirección */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-amber-600" />
+              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
                   Dirección de Entrega
                 </h2>
-                
-                <div className="space-y-3">
-                  <textarea
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    rows={3}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none ${
-                      errors.address ? 'border-red-500 bg-red-50' : 'border-stone-200'
-                    }`}
-                    placeholder="Av. Principal 123, Urbanización, Distrito..."
-                  />
-                  {errors.address && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
-                  
-                  {/* Botón de ubicación actual */}
-                  <button
-                    type="button"
-                    onClick={handleUseCurrentLocation}
-                    disabled={isLoadingLocation}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoadingLocation ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Detectando ubicación...
-                      </>
-                    ) : (
-                      <>
-                        <MapPin className="w-4 h-4" />
-                        📍 Usar ubicación actual
-                      </>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsJardines(!isJardines);
+                    if (!isJardines) {
+                      setAddress('');
+                      setJardinesManzana('');
+                      setJardinesLote('');
+                    }
+                  }}
+                  className={`w-full p-3 sm:p-4 border-2 rounded-xl flex items-center gap-2 sm:gap-3 transition-all mb-4 ${
+                    isJardines
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-stone-200 hover:border-stone-300 bg-white'
+                  }`}
+                >
+                  <div className={`min-w-[18px] w-[18px] h-[18px] sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center transition-all ${
+                    isJardines ? 'bg-emerald-500 border-emerald-500' : 'border-stone-400'
+                  }`}>
+                    {isJardines && <span className="text-white text-[10px] sm:text-xs font-bold">✓</span>}
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className={`font-semibold text-sm sm:text-base ${isJardines ? 'text-emerald-800' : 'text-stone-700'}`}>
+                      Urb. Los Jardines de San Andrés
+                    </p>
+                    <p className={`text-[11px] sm:text-xs ${isJardines ? 'text-emerald-600' : 'text-stone-400'}`}>
+                      {isJardines ? '✓ Delivery gratuito' : 'Delivery gratuito'}
+                    </p>
+                  </div>
+                  {isJardines && (
+                    <span className="ml-auto bg-emerald-500 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full flex-shrink-0">
+                      Gratis
+                    </span>
+                  )}
+                </button>
+
+                {isJardines ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">Manzana *</label>
+                        <input
+                          type="text"
+                          value={jardinesManzana}
+                          onChange={(e) => setJardinesManzana(e.target.value.toUpperCase())}
+                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900 ${
+                            errors.jardinesManzana ? 'border-red-500 bg-red-50' : 'border-stone-200'
+                          }`}
+                          placeholder="Ej: A, B, C..."
+                        />
+                        {errors.jardinesManzana && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">Lote *</label>
+                        <input
+                          type="text"
+                          value={jardinesLote}
+                          onChange={(e) => setJardinesLote(e.target.value)}
+                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-900 ${
+                            errors.jardinesLote ? 'border-red-500 bg-red-50' : 'border-stone-200'
+                          }`}
+                          placeholder="Ej: 1, 2, 3..."
+                        />
+                        {errors.jardinesLote && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+                      </div>
+                    </div>
+                    {jardinesManzana && jardinesLote && (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                        <p className="text-xs text-emerald-700 font-medium mb-1">📍 Dirección completa:</p>
+                        <p className="text-sm text-emerald-800 font-semibold">{jardinesAddress}</p>
+                      </div>
                     )}
-                  </button>
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <textarea
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      rows={3}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none text-stone-900 ${
+                        errors.address ? 'border-red-500 bg-red-50' : 'border-stone-200'
+                      }`}
+                      placeholder="Av. Principal 123, Urbanización, Distrito..."
+                    />
+                    {errors.address && <p className="text-red-500 text-sm mt-1">Campo obligatorio</p>}
+
+                    <button
+                      type="button"
+                      onClick={handleUseCurrentLocation}
+                      disabled={isLoadingLocation}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingLocation ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Detectando ubicación...
+                        </>
+                      ) : (
+                        <>
+                          <MapPin className="w-4 h-4" />
+                          📍 Usar ubicación actual
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-[11px] text-stone-400 italic leading-relaxed mt-1">
+                      * compartenos tu ubicación actual por WhatsApp para ubicarte mejor
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Método de Pago */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-amber-600" />
+              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
                   Método de Pago
                 </h2>
                 
-                <div className="grid grid-cols-3 gap-3">
-                  {/* Efectivo */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('efectivo')}
@@ -370,7 +504,6 @@ export default function CheckoutPage() {
                     <span className={`font-medium ${paymentMethod === 'efectivo' ? 'text-amber-700' : 'text-stone-600'}`}>Efectivo</span>
                   </button>
 
-                  {/* Yape */}
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('yape')}
@@ -380,15 +513,12 @@ export default function CheckoutPage() {
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm ${
-                      paymentMethod === 'yape' ? 'bg-purple-600' : 'bg-purple-400'
-                    }`}>
-                      Y
+                    <div className="w-8 h-8 relative">
+                      <Image src="/icono-yape.png" alt="Yape" fill className="object-contain" />
                     </div>
                     <span className={`font-medium ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-600'}`}>Yape</span>
                   </button>
 
-                  {/* Plin */}
                   <button
                     type="button"
                     onClick={() => handlePaymentSelect('plin')}
@@ -398,10 +528,8 @@ export default function CheckoutPage() {
                         : 'border-stone-200 hover:border-stone-300'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm ${
-                      paymentMethod === 'plin' ? 'bg-teal-600' : 'bg-teal-400'
-                    }`}>
-                      P
+                    <div className="w-8 h-8 relative">
+                      <Image src="/icono-plin.png" alt="Plin" fill className="object-contain" />
                     </div>
                     <span className={`font-medium ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-600'}`}>Plin</span>
                   </button>
@@ -410,22 +538,21 @@ export default function CheckoutPage() {
               </div>
 
               {/* Notas */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-stone-800 mb-4">Notas adicionales (opcional)</h2>
+              <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-stone-800 mb-4">Notas adicionales <span className="text-stone-400 font-normal">(opcional)</span></h2>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none"
+                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none text-stone-900"
                   placeholder="Ej: Sin cebolla, extra salsa, tocar timbre..."
                 />
               </div>
 
-              {/* Botón Submit */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3.5 md:py-4 rounded-xl font-bold text-sm md:text-lg shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -440,43 +567,6 @@ export default function CheckoutPage() {
                 )}
               </button>
             </form>
-          </div>
-
-          {/* Resumen del Pedido */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-8">
-              <h3 className="text-xl font-bold text-stone-800 mb-4">Tu Pedido</h3>
-              
-              <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
-                {items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 p-2 bg-stone-50 rounded-lg">
-                    <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center text-2xl">
-                      🍽️
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-stone-800 truncate">{item.title}</p>
-                      <p className="text-sm text-stone-500">x{item.quantity}</p>
-                    </div>
-                    <p className="font-bold text-amber-600">S/ {(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="border-t border-stone-200 pt-4 space-y-2">
-                <div className="flex justify-between text-stone-600">
-                  <span>Subtotal</span>
-                  <span className="font-medium">S/ {subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-stone-600">
-                  <span>Delivery</span>
-                  <span className="font-medium">S/ {delivery.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-xl font-bold text-stone-800 pt-2 border-t border-stone-200">
-                  <span>Total</span>
-                  <span className="text-amber-600">S/ {total.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
