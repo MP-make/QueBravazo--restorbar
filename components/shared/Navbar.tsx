@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, ShoppingBag, X, Home, MessageCircle, UtensilsCrossed, MapPin } from 'lucide-react';
 import { useSearchStore } from '@/lib/stores/search';
 import { useCartStore } from '@/lib/stores/cart';
 import { useUIStore } from '@/lib/stores/ui';
@@ -10,7 +10,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { fetchProducts } from '@/lib/api/ventify';
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -24,6 +23,11 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Close cart on any navigation
+  useEffect(() => {
+    setIsCartOpen(false);
+  }, [pathname, setIsCartOpen]);
+
   const hideNavbar =
     pathname?.startsWith('/waiter') ||
     pathname === '/login' ||
@@ -32,7 +36,7 @@ export default function Navbar() {
 
   const isOnMenu = pathname === '/menu';
 
-  // Scroll effect
+  // Scroll effect for top nav
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -80,9 +84,19 @@ export default function Navbar() {
 
   if (hideNavbar) return null;
 
+  const navItems = [
+    { href: '/', icon: Home, label: 'Inicio', isActive: pathname === '/' },
+    { href: '/menu', icon: UtensilsCrossed, label: 'Menú', isActive: pathname === '/menu' },
+    { href: null, icon: Search, label: 'Buscar', isActive: false, action: () => setIsOpen(true) },
+    { href: '/ubicanos', icon: MapPin, label: 'Ubícanos', isActive: pathname === '/ubicanos' },
+    { href: null, icon: ShoppingBag, label: 'Carrito', isActive: false, action: () => setIsCartOpen(true), badge: cartCount },
+  ];
+
   return (
     <>
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      {/* Desktop top navbar — oculto en /menu y / porque tienen su propio header */}
+      {pathname !== '/menu' && pathname !== '/' && pathname !== '/ubicanos' && (
+      <nav className={`hidden md:block fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-stone-900/95 backdrop-blur-md shadow-lg shadow-black/30'
           : 'bg-stone-900/90 backdrop-blur-sm'
@@ -92,9 +106,11 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500/20">
-                <img 
-                  src="/logo_que_bravazo.png" 
-                  alt="¡Qué Bravazo! Logo" 
+                <Image
+                  src="/logo_que_bravazo.png"
+                  alt="¡Qué Bravazo! Logo"
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -107,7 +123,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop nav */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
               {!isOnMenu && (
                 <Link href="/menu" className="text-stone-300 hover:text-amber-400 font-medium transition-colors text-sm">
                   🍽️ Ver Menú
@@ -139,41 +155,47 @@ export default function Navbar() {
                 <span className="font-medium text-sm">Carrito</span>
               </button>
             </div>
-
-            {/* Mobile buttons */}
-            <div className="md:hidden flex items-center gap-2">
-              <button onClick={() => setIsOpen(true)} className="text-stone-300 p-2 rounded-lg hover:bg-stone-800 transition-colors">
-                <Search size={22} />
-              </button>
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-stone-300 p-2 rounded-lg hover:bg-stone-800 transition-colors">
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
           </div>
+        </div>
+      </nav>
+      )}
 
-          {/* Mobile Menu */}
-          {isMenuOpen && (
-            <div className="md:hidden pb-4 pt-2 border-t border-stone-700 animate-fade-in-up space-y-2">
-              <Link href="/menu" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-3 w-full text-stone-300 hover:text-amber-400 hover:bg-stone-800 p-3 rounded-xl transition-colors">
-                <span className="text-xl">🍽️</span>
-                <span className="font-medium">Ver Menú Completo</span>
-              </Link>
-              <button
-                onClick={() => { setIsCartOpen(true); setIsMenuOpen(false); }}
-                className="flex items-center space-x-3 w-full text-stone-300 hover:text-amber-400 hover:bg-stone-800 p-3 rounded-xl transition-colors"
-              >
-                <div className="relative">
-                  <ShoppingBag size={22} />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartCount}
+      {/* Mobile bottom navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-stone-900/95 backdrop-blur-md border-t border-stone-700/50 safe-area-bottom">
+        <div className="flex items-center justify-around h-16">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            if (item.action) {
+              return (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className="flex flex-col items-center justify-center gap-0.5 w-full h-full text-stone-400 hover:text-amber-400 transition-colors relative"
+                >
+                  <Icon size={22} />
+                  <span className="text-[10px] font-medium">{item.label}</span>
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <span className="absolute top-0.5 right-1/4 bg-gradient-to-r from-amber-500 to-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                      {item.badge > 99 ? '99+' : item.badge}
                     </span>
                   )}
-                </div>
-                <span className="font-medium">Carrito</span>
-              </button>
-            </div>
-          )}
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={item.label}
+                href={item.href!}
+                onClick={() => setIsCartOpen(false)}
+                className={`flex flex-col items-center justify-center gap-0.5 w-full h-full transition-colors ${
+                  item.isActive ? 'text-amber-400' : 'text-stone-400 hover:text-amber-400'
+                }`}
+              >
+                <Icon size={22} />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
 
@@ -217,7 +239,7 @@ export default function Navbar() {
               <div className="max-h-80 overflow-y-auto">
                 {results.length === 0 ? (
                   <div className="px-5 py-8 text-center">
-                    <p className="text-stone-400 text-sm">No se encontraron resultados para <span className="font-semibold text-stone-600">"{query}"</span></p>
+                    <p className="text-stone-400 text-sm">No se encontraron resultados para <span className="font-semibold text-stone-600">&ldquo;{query}&rdquo;</span></p>
                   </div>
                 ) : (
                   <ul>
@@ -269,7 +291,7 @@ export default function Navbar() {
                       }}
                       className="text-amber-600 hover:text-amber-700 text-sm font-semibold transition-colors"
                     >
-                      Ver todos los resultados para "{query}" →
+                      Ver todos los resultados para &ldquo;{query}&rdquo; →
                     </button>
                   </div>
                 )}

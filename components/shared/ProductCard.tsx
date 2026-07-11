@@ -1,7 +1,8 @@
 // components/shared/ProductCard.tsx
 "use client";
+import { useState } from 'react';
 import Image from 'next/image';
-import { Plus } from 'lucide-react';
+import { Plus, ImageIcon } from 'lucide-react';
 import { Product, AppMode } from '@/types';
 import { useProductActions } from '@/lib/hooks/useProductActions';
 
@@ -13,6 +14,7 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, mode, onQuickView }: ProductCardProps) => {
   const { handleAddToCart } = useProductActions();
+  const [imgError, setImgError] = useState(false);
   // Solo mostrar "agotado" en modo waiter, nunca al cliente final
   const isOutOfStock = mode === 'waiter' && product.stock !== undefined && product.stock <= 0;
 
@@ -20,14 +22,22 @@ export const ProductCard = ({ product, mode, onQuickView }: ProductCardProps) =>
     <div className="bg-white rounded-2xl overflow-hidden flex flex-col shadow-sm border border-stone-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
 
       {/* ── Imagen ──────────────────────────────────────────────── */}
-      <div className="relative w-full aspect-square overflow-hidden bg-stone-100">
-        <Image
-          src={product.image || '/logo-que-bravazo.png'}
-          alt={product.title}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className={`object-cover transition-transform duration-300 ${!isOutOfStock ? 'group-hover:scale-105' : 'opacity-60'}`}
-        />
+      <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-stone-200 to-stone-100">
+        {imgError ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
+            <ImageIcon className="w-10 h-10 mb-1 stroke-1" />
+            <span className="text-[10px] font-medium">{product.title}</span>
+          </div>
+        ) : (
+          <Image
+            src={product.image || '/logo-que-bravazo.png'}
+            alt={product.title}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            onError={() => setImgError(true)}
+            className={`object-cover transition-transform duration-300 ${!isOutOfStock ? 'group-hover:scale-105' : 'opacity-60'}`}
+          />
+        )}
 
         {/* Overlay agotado — solo waiter */}
         {isOutOfStock && (
@@ -40,7 +50,7 @@ export const ProductCard = ({ product, mode, onQuickView }: ProductCardProps) =>
 
         {/* Badge destacado */}
         {product.featured && !isOutOfStock && (
-          <span className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+          <span className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
             ⭐ Destacado
           </span>
         )}

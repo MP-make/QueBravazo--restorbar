@@ -1,44 +1,44 @@
-import { Suspense } from 'react';
-import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
+"use client";
+import { useEffect } from 'react';
+import Image from 'next/image';
+import { useProductStore } from '@/lib/stores/products';
 import MenuContent from './MenuContent';
 
-async function getProducts() {
-  const apiUrl = process.env.NEXT_PUBLIC_VENTIFY_API_URL;
-  const accountId = process.env.NEXT_PUBLIC_VENTIFY_ACCOUNT_ID;
+function SplashScreen() {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
-  if (!apiUrl || !accountId) {
-    console.warn("Faltan variables de entorno para API Ventify");
-    return [];
-  }
-
-  try {
-    const res = await fetch(`${apiUrl}/api/v1/products?accountId=${accountId}`, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(process.env.NEXT_PUBLIC_VENTIFY_API_KEY && {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_VENTIFY_API_KEY}`
-        })
-      }
-    });
-
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || data || [];
-  } catch (error) {
-    console.error("Error obteniendo productos de Ventify:", error);
-    return [];
-  }
+  return (
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black">
+      <div className="relative w-28 h-28 md:w-36 md:h-36 animate-bounce">
+        <Image
+          src="/logo_que_bravazo.png"
+          alt="¡Qué Bravazo!"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
+      <p className="mt-6 text-stone-500 text-xs font-bold tracking-[0.3em] uppercase animate-pulse">
+        Cargando...
+      </p>
+    </div>
+  );
 }
 
-export default async function MenuPage() {
-  const products = await getProducts();
+export default function MenuPage() {
+  const products = useProductStore((s) => s.products);
+  const loaded = useProductStore((s) => s.loaded);
+
+  if (!loaded) {
+    return <SplashScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <Suspense fallback={<LoadingSkeleton />}>
-        <MenuContent initialProducts={products} />
-      </Suspense>
+      <MenuContent initialProducts={products} />
     </div>
   );
 }

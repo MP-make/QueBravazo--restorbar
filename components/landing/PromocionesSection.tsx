@@ -45,7 +45,7 @@ export default function PromocionesSection({ products }: PromocionesSectionProps
   }).filter(Boolean);
 
   return (
-    <section id="promociones" className="py-16 md:py-24 section-cream">
+    <section id="promociones" className="py-16 md:py-24 bg-white/20 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -62,41 +62,48 @@ export default function PromocionesSection({ products }: PromocionesSectionProps
         </div>
 
         {/* Grid de promociones */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {combos.map((combo) => {
             if (!combo || !combo.product) return null;
             const { product, badge, color, precioAnterior } = combo;
             return (
-              <div key={product.id} className="group relative card-elegant overflow-hidden">
-                <div className="relative h-56 overflow-hidden">
+              <div key={product.id} className="bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden flex flex-col shadow-sm border border-stone-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
+                <div className="relative w-full aspect-square overflow-hidden bg-stone-100">
                   <Image
                     src={product.image || '/Fondo frituras.png'}
                     alt={product.title}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className={`absolute inset-0 bg-gradient-to-t ${color} opacity-50`} />
-                  <div className="absolute top-4 right-4 glass-effect px-4 py-2 rounded-full">
-                    <span className="font-bold text-stone-800">{badge}</span>
+                  <div className={`absolute inset-0 bg-gradient-to-t ${color} opacity-30`} />
+                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">
+                    {badge}
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+                    <span className="text-white font-black text-lg leading-none drop-shadow">
+                      {precioAnterior && (
+                        <span className="text-stone-400 line-through text-sm font-normal mr-2">{precioAnterior}</span>
+                      )}
+                      S/ {product.price.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-stone-800 mb-2">{product.title}</h3>
-                  <p className="text-stone-600 mb-4">{product.description || 'Combo especial'}</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-3xl font-bold gradient-text">S/ {product.price.toFixed(2)}</span>
-                      {precioAnterior && (
-                        <span className="text-lg text-stone-400 line-through ml-2">{precioAnterior}</span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      className="btn-primary"
-                    >
-                      ¡Lo quiero!
-                    </button>
+                <div className="px-3 py-2.5 flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-stone-400 font-medium uppercase tracking-wide leading-none mb-0.5">
+                      Combo especial
+                    </p>
+                    <h3 className="text-sm font-bold text-stone-800 leading-tight line-clamp-2">
+                      {product.title}
+                    </h3>
+                    <p className="text-[11px] text-stone-400 line-clamp-1 mt-0.5">{product.description || 'Combo especial'}</p>
                   </div>
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 active:scale-90 text-white rounded-full flex items-center justify-center shadow-md shadow-rose-500/30 transition-all"
+                  >
+                    <span className="text-lg font-bold">+</span>
+                  </button>
                 </div>
               </div>
             );

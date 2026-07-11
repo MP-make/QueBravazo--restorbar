@@ -136,24 +136,87 @@ export default function CheckoutPage() {
   if (items.length === 0) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50 py-8">
-      <div className="max-w-5xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50 py-4 md:py-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4">
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/" className="p-2 hover:bg-white rounded-full transition-colors">
+        <div className="sticky top-0 z-10 bg-gradient-to-br from-stone-50 to-amber-50 py-3 -mx-3 sm:-mx-4 px-3 sm:px-4 md:px-0 md:static md:bg-none md:py-0 md:mx-0 mb-6 md:mb-8 flex items-center gap-3">
+          <Link href="/" className="p-1.5 md:p-2 hover:bg-white rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5 text-stone-600" />
           </Link>
-          <h1 className="text-2xl font-bold text-stone-800">Finalizar Pedido</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-stone-800">Finalizar Pedido</h1>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-6">
+
+          {/* ── Resumen del pedido ──────────────────────────────────── */}
+          <div className="sticky top-14 z-10 lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1">
+            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+              <h3 className="font-bold text-stone-800 mb-4">Tu Pedido</h3>
+              <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                {items.map(item => (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
+                      <Image src={item.image || '/logo-que-bravazo.png'} alt={item.title} fill className="object-cover" sizes="44px" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-stone-800 truncate">{item.title}</p>
+                      <p className="text-xs text-stone-400">x{item.quantity}</p>
+                    </div>
+                    <p className="text-sm font-bold text-amber-600 flex-shrink-0">S/ {(item.price * item.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Datos en vivo ────────────────────────────── */}
+              {(customerName || phone || address || paymentMethod) && (
+                <div className="border-t border-stone-100 pt-3 mb-3 space-y-2 text-xs">
+                  {customerName && (
+                    <div className="flex justify-between">
+                      <span className="text-stone-400">Cliente</span>
+                      <span className="font-medium text-stone-700 text-right max-w-[60%] truncate">{customerName}</span>
+                    </div>
+                  )}
+                  {phone && (
+                    <div className="flex justify-between">
+                      <span className="text-stone-400">Teléfono</span>
+                      <span className="font-medium text-stone-700">{phone}</span>
+                    </div>
+                  )}
+                  {address && (
+                    <div className="flex justify-between">
+                      <span className="text-stone-400">Dirección</span>
+                      <span className="font-medium text-stone-700 text-right max-w-[60%] truncate">{address}</span>
+                    </div>
+                  )}
+                  {paymentMethod && (
+                    <div className="flex justify-between">
+                      <span className="text-stone-400">Pago</span>
+                      <span className="font-medium text-amber-600 capitalize">{paymentMethod === 'efectivo' ? 'Efectivo' : paymentMethod}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="border-t border-stone-100 pt-3 space-y-1.5">
+                <div className="flex justify-between text-sm text-stone-500">
+                  <span>Subtotal</span><span className="font-medium text-stone-700">S/ {subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-stone-500">
+                  <span>Delivery</span><span className="font-medium text-stone-700">S/ {DELIVERY_COST.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-stone-800 pt-1 border-t border-stone-100 text-base">
+                  <span>Total</span><span className="text-amber-600">S/ {total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* ── Formulario ────────────────────────────────────────── */}
-          <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-5">
+          <form onSubmit={handleSubmit} className="lg:col-start-1 lg:col-end-3 lg:row-start-1 space-y-4 md:space-y-5">
 
             {/* Datos de contacto */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
               <h2 className="text-base font-bold text-stone-800 mb-4 flex items-center gap-2">
                 <User className="w-4 h-4 text-amber-500" /> Datos de Contacto
               </h2>
@@ -189,7 +252,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Dirección */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
               <h2 className="text-base font-bold text-stone-800 mb-4 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-amber-500" /> Dirección de Entrega
               </h2>
@@ -208,11 +271,11 @@ export default function CheckoutPage() {
             </div>
 
             {/* Método de pago */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
               <h2 className="text-base font-bold text-stone-800 mb-4 flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-amber-500" /> Método de Pago
               </h2>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Efectivo */}
                 <button type="button" onClick={() => setPaymentMethod('efectivo')}
                   className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition-all ${paymentMethod === 'efectivo' ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:border-stone-300'}`}>
@@ -222,13 +285,17 @@ export default function CheckoutPage() {
                 {/* Yape */}
                 <button type="button" onClick={() => setPaymentMethod('yape')}
                   className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition-all ${paymentMethod === 'yape' ? 'border-purple-500 bg-purple-50' : 'border-stone-200 hover:border-stone-300'}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-sm ${paymentMethod === 'yape' ? 'bg-purple-600' : 'bg-purple-400'}`}>Y</div>
+                  <div className="w-7 h-7 relative">
+                    <Image src="/icono-yape.png" alt="Yape" fill className="object-contain" />
+                  </div>
                   <span className={`text-sm font-semibold ${paymentMethod === 'yape' ? 'text-purple-700' : 'text-stone-500'}`}>Yape</span>
                 </button>
                 {/* Plin */}
                 <button type="button" onClick={() => setPaymentMethod('plin')}
                   className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition-all ${paymentMethod === 'plin' ? 'border-teal-500 bg-teal-50' : 'border-stone-200 hover:border-stone-300'}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-sm ${paymentMethod === 'plin' ? 'bg-teal-600' : 'bg-teal-400'}`}>P</div>
+                  <div className="w-7 h-7 relative">
+                    <Image src="/icono-plin.png" alt="Plin" fill className="object-contain" />
+                  </div>
                   <span className={`text-sm font-semibold ${paymentMethod === 'plin' ? 'text-teal-700' : 'text-stone-500'}`}>Plin</span>
                 </button>
               </div>
@@ -251,7 +318,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Notas */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
               <h2 className="text-base font-bold text-stone-800 mb-3">Notas adicionales <span className="text-stone-400 font-normal">(opcional)</span></h2>
               <textarea
                 value={notes} onChange={e => setNotes(e.target.value)} rows={2}
@@ -263,7 +330,7 @@ export default function CheckoutPage() {
             {/* Botón confirmar */}
             <button
               type="submit"
-              className="w-full bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white py-4 rounded-xl font-bold text-base shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-3"
+              className="w-full bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white py-3.5 md:py-4 rounded-xl font-bold text-sm md:text-base shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-3"
             >
               <MessageCircle className="w-5 h-5" />
               Confirmar Pedido por WhatsApp — S/ {total.toFixed(2)}
@@ -272,38 +339,6 @@ export default function CheckoutPage() {
               Se abrirá WhatsApp con tu pedido listo para enviar 📲
             </p>
           </form>
-
-          {/* ── Resumen del pedido ──────────────────────────────────── */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm p-5 sticky top-6">
-              <h3 className="font-bold text-stone-800 mb-4">Tu Pedido</h3>
-              <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                {items.map(item => (
-                  <div key={item.id} className="flex items-center gap-3">
-                    <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0">
-                      <Image src={item.image || '/logo-que-bravazo.png'} alt={item.title} fill className="object-cover" sizes="44px" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-stone-800 truncate">{item.title}</p>
-                      <p className="text-xs text-stone-400">x{item.quantity}</p>
-                    </div>
-                    <p className="text-sm font-bold text-amber-600 flex-shrink-0">S/ {(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-stone-100 pt-3 space-y-1.5">
-                <div className="flex justify-between text-sm text-stone-500">
-                  <span>Subtotal</span><span className="font-medium text-stone-700">S/ {subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-stone-500">
-                  <span>Delivery</span><span className="font-medium text-stone-700">S/ {DELIVERY_COST.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between font-bold text-stone-800 pt-1 border-t border-stone-100 text-base">
-                  <span>Total</span><span className="text-amber-600">S/ {total.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
         </div>
       </div>

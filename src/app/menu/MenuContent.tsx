@@ -1,293 +1,437 @@
 "use client";
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Plus, Search, X, ShoppingBag, Menu } from 'lucide-react';
 import { Product } from '@/types';
-import { ProductCard } from '@/components/shared/ProductCard';
 import { CartDrawer } from '@/components/shared/CartDrawer';
 import { useUIStore } from '@/lib/stores/ui';
 import { useCartStore } from '@/lib/stores/cart';
-import { Search, ShoppingBag, X, UtensilsCrossed, GlassWater, Sparkles, Beer, ChevronRight } from 'lucide-react';
+import { useSearchStore } from '@/lib/stores/search';
+import { useProductActions } from '@/lib/hooks/useProductActions';
 
 interface MenuContentProps {
   initialProducts: Product[];
 }
 
-const TABS = [
-  { id: 'platillos', label: 'Platillos', emoji: '🍗', icon: UtensilsCrossed,
-    keywords: ['fritura', 'hamburguesa', 'combo', 'pollo', 'alita', 'presa', 'comida', 'platillo', 'broaster'] },
-  { id: 'gaseosas', label: 'Gaseosas', emoji: '🥤', icon: GlassWater,
-    keywords: ['gaseosa', 'refresco', 'cola', 'inca kola', 'sprite', 'fanta'] },
-  { id: 'bebidas', label: 'Bebidas', emoji: '🍺', icon: Beer,
-    keywords: ['bebida', 'cerveza', 'trago', 'licor', 'vino', 'ron', 'pisco', 'vodka', 'mike', 'cielo', 'agua', 'jugo', 'marciano'] },
-  { id: 'extras', label: 'Extras', emoji: '✨', icon: Sparkles, keywords: [] },
-] as const;
+interface SectionInfo {
+  id: string;
+  icon?: string;
+  label: string;
+  desc: string;
+  keywords: string[];
+}
 
-type TabId = typeof TABS[number]['id'];
+const SECTIONS: SectionInfo[] = [
+  { id: 'combos', label: 'Combos', desc: 'Para compartir con la gente', keywords: ['combo', 'promo', 'oferta', 'happy hour', '2x1'] },
+  { id: 'platos-fuertes', label: 'Platos Fuertes', desc: 'Broaster, hamburguesas, alitas', keywords: ['pollo', 'broaster', 'hamburguesa', 'alita', 'presa', 'comida', 'platillo', 'fritura', 'parrilla', 'carne', 'chicharron'] },
+  { id: 'bebidas', label: 'Bebidas', desc: 'Gaseosas, jugos, tragos', keywords: ['gaseosa', 'bebida', 'refresco', 'cola', 'agua', 'jugo', 'cerveza', 'trago', 'licor', 'coctel', 'ron', 'pisco', 'vodka', 'whisky', 'marciano', 'mike'] },
+  { id: 'postres', label: 'Postres', desc: 'Dulces y más', keywords: ['postre', 'dulce', 'helado', 'pie', 'torta'] },
+  { id: 'ensaladas', label: 'Ensaladas', desc: 'Frescas y saludables', keywords: ['ensalada', 'verdura', 'vegetal', 'salad'] },
+  { id: 'salsas', label: 'Salsas & Cremas', desc: 'Acompañantes', keywords: ['salsa', 'crema', 'aderezo', 'mayonesa', 'ketchup', 'mostaza'] },
+  { id: 'extras', label: 'Extras', desc: 'Complementos', keywords: [] },
+];
 
-function getTabForCategory(category: string): TabId {
+function getSectionForCategory(category: string): string {
   const lower = (category || '').toLowerCase();
-  for (const tab of TABS) {
-    if (tab.id === 'extras') continue;
-    if (tab.keywords.some((kw) => lower.includes(kw))) return tab.id;
+  for (const s of SECTIONS) {
+    if (s.id === 'extras') continue;
+    if (s.keywords.some((kw) => lower.includes(kw))) return s.id;
   }
   return 'extras';
 }
 
-export default function MenuContent({ initialProducts }: MenuContentProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('platillos');
-  const [search, setSearch] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
+function MenuProductCard({ product }: { product: Product }) {
+  const [imgError, setImgError] = useState(false);
+  const { handleAddToCart } = useProductActions();
+  return (
+    <div className="bg-[#1e1e20] rounded-xl overflow-hidden shadow-md shadow-black/30 border border-white/5 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10 transition-all group">
+      <div className="relative w-full aspect-square overflow-hidden bg-[#2a2a2d]">
+        {imgError ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-500">
+            <svg className="w-10 h-10 mb-1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            <span className="text-[10px] font-medium">{product.title}</span>
+          </div>
+        ) : (
+          <Image
+            src={product.image || '/logo-que-bravazo.png'}
+            alt={product.title}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            onError={() => setImgError(true)}
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        )}
+      </div>
+      <div className="p-3">
+        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">{product.title}</h3>
+        {product.description && (
+          <p className="text-[11px] text-stone-500 line-clamp-1 mt-0.5">{product.description}</p>
+        )}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-base font-black text-[#ff5722]">S/ {product.price.toFixed(2)}</span>
+          <button
+            onClick={() => handleAddToCart(product, 'delivery')}
+            className="w-8 h-8 bg-[#ff5722] hover:bg-orange-500 active:scale-90 text-white rounded-full flex items-center justify-center transition-all shadow-sm shadow-orange-500/30"
+          >
+            <Plus className="w-4 h-4" strokeWidth={3} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+export default function MenuContent({ initialProducts }: MenuContentProps) {
+  const [activeSection, setActiveSection] = useState('combos');
+  const [search, setSearch] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isCartOpen, setIsCartOpen } = useUIStore();
   const { items } = useCartStore();
+  const { setIsOpen: setIsSearchOpen } = useSearchStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const cartTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+  const sectionMap = useMemo(() => {
+    const map = new Map<string, Product[]>();
+    for (const s of SECTIONS) map.set(s.id, []);
+    for (const p of initialProducts) {
+      const secId = getSectionForCategory(p.category || '');
+      const arr = map.get(secId);
+      if (arr) arr.push(p);
+    }
+    return map;
+  }, [initialProducts]);
+
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return null;
+    return initialProducts.filter(
+      (p) =>
+        (p.title || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q)
+    );
+  }, [initialProducts, search]);
+
+  const visibleSections = useMemo(() => {
+    if (search) {
+      const secs = new Set<string>();
+      for (const p of searchResults!) secs.add(getSectionForCategory(p.category || ''));
+      return Array.from(secs);
+    }
+    return SECTIONS.filter((s) => (sectionMap.get(s.id)?.length ?? 0) > 0).map((s) => s.id);
+  }, [search, searchResults, sectionMap]);
+
+  const categorizedSearch = useMemo(() => {
+    if (!search) return null;
+    const map = new Map<string, Product[]>();
+    for (const p of searchResults!) {
+      const secId = getSectionForCategory(p.category || '');
+      if (!map.has(secId)) map.set(secId, []);
+      map.get(secId)!.push(p);
+    }
+    return map;
+  }, [search, searchResults]);
 
   const bebidas = useMemo(
-    () => initialProducts.filter((p) => getTabForCategory(p.category || '') === 'bebidas'),
+    () => initialProducts.filter((p) => getSectionForCategory(p.category || '') === 'bebidas'),
     [initialProducts]
   );
 
-  const groupedProducts = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const pool = q
-      ? initialProducts.filter((p) =>
-          (p.title || '').toLowerCase().includes(q) ||
-          (p.category || '').toLowerCase().includes(q) ||
-          (p.description || '').toLowerCase().includes(q)
-        )
-      : initialProducts.filter((p) => getTabForCategory(p.category || '') === activeTab);
+  const scrollToSection = (id: string) => {
+    setActiveSection(id);
+    setSearch('');
+    setSidebarOpen(false);
+    const el = document.getElementById(`section-${id}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-    const map = new Map<string, Product[]>();
-    for (const p of pool) {
-      const cat = p.category || 'Otros';
-      if (!map.has(cat)) map.set(cat, []);
-      map.get(cat)!.push(p);
-    }
-    return map;
-  }, [initialProducts, activeTab, search]);
+  // Intersection Observer — active pill se actualiza al scrollear
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const intersecting = entries.filter((e) => e.isIntersecting);
+        if (intersecting.length === 0) return;
+        intersecting.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const id = intersecting[0].target.id.replace('section-', '');
+        setActiveSection(id);
+      },
+      { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
+    );
 
-  const tabCounts = useMemo(() => {
-    const counts: Record<TabId, number> = { platillos: 0, gaseosas: 0, bebidas: 0, extras: 0 };
-    for (const p of initialProducts) counts[getTabForCategory(p.category || '')]++;
-    return counts;
-  }, [initialProducts]);
-
-  const allResults = Array.from(groupedProducts.values()).flat();
+    const els = document.querySelectorAll('[id^="section-"]');
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [visibleSections]);
 
   return (
-    <>
-      {/* ════════════════════════════════════════════════════════
-          HEADER — fondo oscuro, una sola fila limpia + tabs
-      ════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-40 bg-[#1a1a1a] shadow-2xl">
+    <div className="min-h-screen relative pt-0 md:pt-20">
+      <div className="fixed inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/menú.webp)' }} />
+      <div className="fixed inset-0 bg-black/80" />
 
-        {/* Fila principal: logo | buscador | carrito */}
-        <div className="max-w-5xl mx-auto px-4 h-[60px] flex items-center gap-3">
+      <div className="relative z-10">
+        {/* ════════════════════════════════════════
+            SIDEBAR — overlay + panel deslizante
+        ════════════════════════════════════════ */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <aside className="absolute left-0 top-0 h-screen w-[320px] bg-[#1a1a1d] border-r border-white/10 shadow-2xl shadow-black/50 flex flex-col justify-between translate-x-0 animate-slide-in" style={{ fontFamily: 'var(--font-sans)' }}>
+              {/* BLOQUE SUPERIOR: Header + Buscador + Enlaces */}
+              <div>
+                <div className="flex items-center justify-between px-5 h-16 border-b border-white/5">
+                  <Link href="/" className="flex items-center gap-3">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-[#ff5722]/30">
+                      <Image src="/logo_que_bravazo.png" alt="¡Qué Bravazo!" fill className="object-cover" />
+                    </div>
+                    <div className="leading-tight">
+                      <p className="text-stone-400 text-[10px] font-bold tracking-[0.2em] uppercase">Menú</p>
+                      <p className="text-white font-black text-sm uppercase">¡Qué Bravazo!</p>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-2 text-stone-400 hover:text-white transition-colors"
+                    aria-label="Cerrar"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
-          {/* Logo + nombre */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="relative w-9 h-9 flex-shrink-0">
-              <Image
-                src="/logo-que-bravazo.png"
-                alt="¡Qué Bravazo!"
-                fill
-                className="rounded-full object-cover ring-2 ring-amber-500"
-              />
-            </div>
-            <div className="leading-tight">
-              <p className="text-white font-black text-sm leading-none">Carta Digital</p>
-              <p className="text-amber-400 font-black text-sm leading-none">¡Qué Bravazo!</p>
-            </div>
-          </Link>
+                <div className="px-5 py-6 flex flex-col gap-1">
+                  <button
+                    onClick={() => { setIsSearchOpen(true); setSidebarOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 mb-6 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-stone-400 hover:text-white hover:border-[#ff5722]/50 transition-all"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Buscar platillos...</span>
+                  </button>
+                  <Link
+                    href="/"
+                    onClick={() => setSidebarOpen(false)}
+                    className="block py-4 text-2xl font-black text-white uppercase tracking-widest hover:text-[#ff5722] transition-colors border-b border-white/5"
+                  >
+                    Inicio
+                  </Link>
+                  <Link
+                    href="/ubicanos"
+                    onClick={() => setSidebarOpen(false)}
+                    className="block py-4 text-2xl font-black text-white uppercase tracking-widest hover:text-[#ff5722] transition-colors border-b border-white/5"
+                  >
+                    Ubícanos
+                  </Link>
+                  <button
+                    onClick={() => { setIsCartOpen(true); setSidebarOpen(false); }}
+                    className="block w-full text-left py-4 text-2xl font-black text-white uppercase tracking-widest hover:text-[#ff5722] transition-colors"
+                  >
+                    Carrito
+                  </button>
+                </div>
+              </div>
 
-          {/* Buscador — ocupa todo el espacio central */}
-          <div className="relative flex-1 mx-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Buscar platillo..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 bg-stone-700/60 border border-stone-600 rounded-xl text-sm text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-stone-700 transition-all"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+              {/* ESPACIADOR CENTRAL */}
+              <div className="flex-1" />
+
+              {/* BLOQUE INFERIOR: Contacto y Redes */}
+              <div className="px-5 py-6 border-t border-zinc-800">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-zinc-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">PEDIDOS & RESERVAS</p>
+                    <a href="https://wa.me/51946826535" target="_blank" rel="noopener noreferrer" className="text-zinc-400 text-sm hover:text-white transition-colors">
+                      +51 946 826 535
+                    </a>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">VISÍTANOS</p>
+                    <p className="text-zinc-400 text-sm">Urb. Los Jardines de San Andrés, Pisco</p>
+                  </div>
+                  <div className="flex items-center gap-4 pt-2">
+                    <a href="https://www.instagram.com/quebravazorestobar?igsh=dGF6Znd3anJjNDk0" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-orange-500 transition-colors" aria-label="Instagram">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@quebravazo.restobar?_r=1&_t=ZS-97w9t9lowuF" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-orange-500 transition-colors" aria-label="TikTok">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                    </a>
+                    <a href="https://www.facebook.com/share/1BTpjrUm94/" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-orange-500 transition-colors" aria-label="Facebook">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </aside>
           </div>
+        )}
 
-          {/* Botón carrito */}
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative flex-shrink-0 flex items-center justify-center bg-amber-500 hover:bg-amber-400 active:scale-95 text-white rounded-xl transition-all shadow-lg shadow-amber-500/20"
-            style={{ width: 44, height: 44 }}
-          >
-            <ShoppingBag className="w-5 h-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-black border-2 border-[#1a1a1a] px-0.5">
-                {cartCount}
-              </span>
-            )}
-          </button>
+        {/* ════════════════════════════════════════
+            HEADER DESKTOP (oculto en mobile)
+        ════════════════════════════════════════ */}
+        <div className="hidden md:block fixed top-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/5 w-full">
+          <div className="w-full px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 text-stone-400 hover:text-white transition-colors"
+                aria-label="Menú"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
+
+            <Link href="/" className="flex items-center gap-3">
+              <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-[#ff5722]/30 flex-shrink-0">
+                <Image src="/logo_que_bravazo.png" alt="¡Qué Bravazo!" fill className="object-cover" />
+              </div>
+              <div className="leading-tight">
+                <p className="text-stone-400 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase">Menú</p>
+                <p className="text-[#ff5722] font-black text-sm md:text-base leading-none">¡Qué Bravazo!</p>
+              </div>
+            </Link>
+
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 text-stone-400 hover:text-white transition-colors"
+              aria-label="Carrito"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-[#ff5722] text-white text-[9px] font-black min-w-[16px] h-4 rounded-full flex items-center justify-center border-2 border-black/70">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* ── Tab bar ── */}
-        <div className="border-t border-white/10">
-          <div className="max-w-5xl mx-auto px-2 flex overflow-x-auto scrollbar-hide">
-            {TABS.map((tab) => {
-              const count = tabCounts[tab.id];
-              const isActive = !search && activeTab === tab.id;
+        {/* ════════════════════════════════════════
+            BLOQUE DE PRESENTACIÓN
+        ════════════════════════════════════════ */}
+        <div className="text-center pt-10 pb-6 md:pt-14 md:pb-8 px-4">
+          <p className="text-[#ff5722] text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2">
+            Tus favoritos en un solo lugar
+          </p>
+          <h1 className="font-black text-3xl md:text-5xl text-white uppercase tracking-widest leading-tight">
+            ¡Qué <span className="text-[#ff5722]">Bravazo</span>!
+          </h1>
+          <p className="text-stone-500 text-xs md:text-sm mt-2 max-w-md mx-auto">
+            Broaster · Hamburguesas · Alitas · Cervezas · Tragos
+          </p>
+
+
+        </div>
+
+        {/* ════════════════════════════════════════
+            PILL NAV — sticky con fondo + blur
+        ════════════════════════════════════════ */}
+        <div className="sticky top-0 md:top-24 z-40 bg-black py-4">
+          <div className="w-full px-6 flex justify-center">
+            <div className="inline-flex bg-[#ff5722] rounded-full p-1.5 shadow-lg shadow-orange-500/20 max-w-full">
+              <div
+                className="flex items-center gap-1 overflow-x-auto snap-x snap-mandatory"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {SECTIONS.filter((s) => visibleSections.includes(s.id)).map((s) => {
+                  const isActive = !search && activeSection === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => scrollToSection(s.id)}
+                      className={`flex-shrink-0 px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-full transition-all duration-300 snap-center flex items-center gap-1 ${
+                        isActive
+                          ? 'bg-white text-[#ff5722] shadow-md scale-105'
+                          : 'text-white/90 hover:bg-white/10'
+                      }`}
+                    >
+                      <span>{s.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ════════════════════════════════════════
+            CONTENIDO
+        ════════════════════════════════════════ */}
+        <main className="max-w-7xl mx-auto px-6 pb-32">
+          {search && (
+            <div className="py-4">
+              <p className="text-stone-400 text-sm">
+                <span className="font-semibold text-white">{searchResults?.length ?? 0}</span> resultado{searchResults?.length !== 1 ? 's' : ''} para{' '}
+                <span className="text-[#ff5722] font-semibold">"{search}"</span>
+                <button onClick={() => setSearch('')} className="ml-2 text-xs text-orange-400 hover:text-orange-300 font-semibold">Limpiar</button>
+              </p>
+            </div>
+          )}
+
+          {visibleSections.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-4xl mb-3">🔍</p>
+              <h3 className="text-lg font-semibold text-stone-300 mb-1">
+                {search ? 'Sin resultados' : 'Sin productos'}
+              </h3>
+              <p className="text-stone-500 text-sm">Pronto habrá más opciones</p>
+            </div>
+          )}
+
+          <div>
+            {visibleSections.map((secId, idx) => {
+              const secInfo = SECTIONS.find((s) => s.id === secId)!;
+              const products = search ? (categorizedSearch?.get(secId) ?? []) : (sectionMap.get(secId) ?? []);
+              if (products.length === 0) return null;
+
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => { setActiveTab(tab.id); setSearch(''); }}
-                  className={`
-                    flex items-center gap-1.5 px-4 py-3 text-sm font-semibold whitespace-nowrap
-                    border-b-2 transition-all duration-150 flex-shrink-0
-                    ${isActive
-                      ? 'border-amber-500 text-white bg-white/5'
-                      : 'border-transparent text-stone-400 hover:text-stone-200 hover:bg-white/5'}
-                  `}
-                >
-                  <span className="text-base leading-none">{tab.emoji}</span>
-                  <span>{tab.label}</span>
-                  {count > 0 && (
-                    <span className={`
-                      text-[11px] px-1.5 py-0.5 rounded-full font-bold leading-none
-                      ${isActive ? 'bg-amber-500 text-white' : 'bg-white/10 text-stone-400'}
-                    `}>
-                      {count}
-                    </span>
+                <section key={secId} id={`section-${secId}`} className="scroll-mt-16 md:scroll-mt-44">
+                  <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6 lg:gap-8 xl:gap-12 py-8 lg:py-10">
+                    <div className="min-w-0">
+                      <div className="lg:sticky lg:top-44 flex lg:flex-col items-start gap-3 lg:gap-2">
+                        <span className="text-2xl lg:text-3xl">{secInfo.icon}</span>
+                        <div>
+                          <h2 className="text-lg lg:text-xl font-black text-white uppercase tracking-widest leading-tight">
+                            {secInfo.label}
+                          </h2>
+                          <p className="text-xs text-stone-500 mt-0.5 lg:mt-1 leading-relaxed">
+                            {secInfo.desc}
+                          </p>
+                          <p className="text-[10px] text-stone-600 font-medium mt-1">
+                            {products.length} producto{products.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
+                        {products.map((product) => (
+                          <MenuProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {idx < visibleSections.length - 1 && (
+                    <div className="flex items-center gap-3 py-1">
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                      <span className="text-stone-600 text-[8px] font-bold tracking-[0.3em] uppercase">✦</span>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                    </div>
                   )}
-                </button>
+                </section>
               );
             })}
           </div>
-        </div>
-      </header>
+        </main>
 
-      {/* ════════════════════════════════════════════════════════
-          CONTENIDO
-      ════════════════════════════════════════════════════════ */}
-      <main className="max-w-5xl mx-auto px-4 py-5 pb-32">
+        <CartDrawer visible={isCartOpen} onClose={() => setIsCartOpen(false)} bebidas={bebidas} />
+      </div>
 
-        {/* Banner del tab activo */}
-        {!search && (
-          <div className="mb-6 rounded-2xl overflow-hidden relative h-28 md:h-36 bg-stone-900 shadow-md">
-            <Image
-              src={
-                activeTab === 'platillos' ? '/Fondo frituras.png' :
-                activeTab === 'bebidas'   ? '/Fondo restaurante.png' :
-                '/fondo_de_platillos.jpg'
-              }
-              alt={TABS.find(t => t.id === activeTab)?.label ?? activeTab}
-              fill
-              className="object-cover opacity-60"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent flex items-center px-6">
-              <div>
-                <p className="text-3xl mb-0.5 leading-none">{TABS.find(t => t.id === activeTab)?.emoji}</p>
-                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight">
-                  {TABS.find(t => t.id === activeTab)?.label}
-                </h2>
-                <p className="text-amber-300 text-xs mt-0.5 font-semibold">
-                  {tabCounts[activeTab]} producto{tabCounts[activeTab] !== 1 ? 's' : ''} disponibles
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Cabecera resultado de búsqueda */}
-        {search && (
-          <div className="mb-5 flex items-center gap-2">
-            <Search className="w-4 h-4 text-stone-400" />
-            <p className="text-stone-500 text-sm">
-              <span className="font-semibold text-stone-700">{allResults.length}</span>{' '}
-              resultado{allResults.length !== 1 ? 's' : ''} para{' '}
-              <span className="text-amber-600 font-semibold">"{search}"</span>
-            </p>
-            <button
-              onClick={() => setSearch('')}
-              className="ml-auto text-xs text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1"
-            >
-              Limpiar <X className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-
-        {/* Estado vacío */}
-        {groupedProducts.size === 0 && (
-          <div className="text-center py-20">
-            <p className="text-5xl mb-4">🔍</p>
-            <h3 className="text-lg font-semibold text-stone-600 mb-1">
-              {search ? 'Sin resultados' : 'Sin productos en esta sección'}
-            </h3>
-            <p className="text-stone-400 text-sm">
-              {search ? `No encontramos nada para "${search}"` : 'Pronto habrá más opciones aquí'}
-            </p>
-          </div>
-        )}
-
-        {/* Categorías + productos */}
-        <div className="space-y-10">
-          {Array.from(groupedProducts.entries()).map(([category, products]) => (
-            <section key={category}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-amber-500 rounded-full" />
-                <h3 className="text-base font-black text-stone-800 uppercase tracking-wide">{category}</h3>
-                <span className="text-xs text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full font-semibold">
-                  {products.length}
-                </span>
-                <div className="flex-1 h-px bg-stone-200" />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} mode="delivery" />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-
-        {/* CTA delivery */}
-        {!search && (
-          <div className="mt-12 text-center">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 bg-stone-800 hover:bg-stone-900 text-white px-6 py-3 rounded-full font-semibold text-sm transition-all shadow-md hover:shadow-lg"
-            >
-              🛵 Pedir delivery a domicilio
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
-      </main>
-
-      {/* Botón flotante carrito */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-3 bg-amber-500 hover:bg-amber-400 active:scale-95 text-white px-6 py-3.5 rounded-full shadow-2xl shadow-amber-500/50 font-bold text-sm transition-all"
-          >
-            <ShoppingBag className="w-5 h-5" />
-            Ver pedido · {cartCount}
-            <span className="bg-white text-amber-600 text-xs font-black px-2.5 py-1 rounded-full">
-              S/ {cartTotal.toFixed(2)}
-            </span>
-          </button>
-        </div>
-      )}
-
-      <CartDrawer visible={isCartOpen} onClose={() => setIsCartOpen(false)} bebidas={bebidas} />
-    </>
+      <style jsx global>{`
+        @keyframes slide-in {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.25s ease-out;
+        }
+      `}</style>
+    </div>
   );
 }

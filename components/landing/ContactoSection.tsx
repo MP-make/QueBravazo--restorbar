@@ -1,10 +1,37 @@
 "use client";
 import Image from "next/image";
+import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Instagram, Facebook, MessageCircle } from "lucide-react";
 
 export default function ContactoSection() {
+  const [formData, setFormData] = useState({ name: "", phone: "", subject: "", message: "" });
+  const [sending, setSending] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.message.trim()) return;
+
+    setSending(true);
+
+    let msg = `👋 *Nuevo mensaje - ¡Qué Bravazo!*\n\n`;
+    msg += `👤 *Nombre:* ${formData.name}\n`;
+    msg += `📱 *Teléfono:* ${formData.phone}\n`;
+    if (formData.subject) msg += `📌 *Asunto:* ${formData.subject}\n`;
+    msg += `\n💬 *Mensaje:*\n${formData.message}\n`;
+    msg += `\n✅ *Enviado desde la web*`;
+
+    const url = `https://wa.me/51946826535?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+
+    setFormData({ name: "", phone: "", subject: "", message: "" });
+    setSending(false);
+  };
   return (
-    <section id="contacto" className="py-10 md:py-14 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 text-white relative overflow-hidden">
+    <section id="contacto" className="py-10 md:py-14 bg-stone-900/60 backdrop-blur-md text-white relative overflow-hidden">
       <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
 
@@ -99,11 +126,15 @@ export default function ContactoSection() {
             <div>
               <h4 className="font-semibold mb-4">Síguenos en redes 📲</h4>
               <div className="flex gap-4">
-                <a href="https://www.instagram.com/quebravazorestobar/" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.instagram.com/quebravazorestobar?igsh=dGF6Znd3anJjNDk0" target="_blank" rel="noopener noreferrer"
                   className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-full hover:scale-110 transition-transform shadow-lg" aria-label="Instagram">
                   <Instagram className="w-6 h-6" />
                 </a>
-                <a href="https://www.facebook.com/quebravazorestobar" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.tiktok.com/@quebravazo.restobar?_r=1&_t=ZS-97w9t9lowuF" target="_blank" rel="noopener noreferrer"
+                  className="bg-black p-3 rounded-full hover:scale-110 transition-transform shadow-lg border border-white/20" aria-label="TikTok">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                </a>
+                <a href="https://www.facebook.com/share/1BTpjrUm94/" target="_blank" rel="noopener noreferrer"
                   className="bg-blue-600 p-3 rounded-full hover:scale-110 transition-transform shadow-lg" aria-label="Facebook">
                   <Facebook className="w-6 h-6" />
                 </a>
@@ -133,22 +164,23 @@ export default function ContactoSection() {
           <div className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-amber-500/20">
             <h3 className="text-2xl font-bold mb-2">Envíanos un mensaje 💬</h3>
             <p className="text-stone-400 text-sm mb-6">Consultas, pedidos especiales o reservas de mesa</p>
-            <form className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-stone-300">Nombre</label>
-                  <input type="text" placeholder="Tu nombre"
+                  <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Tu nombre" required
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-stone-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-stone-300">Teléfono</label>
-                  <input type="tel" placeholder="946 826 535"
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="946 826 535" required
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-stone-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2 text-stone-300">Asunto</label>
-                <select className="w-full px-4 py-3 bg-stone-800 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-300">
+                <select name="subject" value={formData.subject} onChange={handleChange}
+                  className="w-full px-4 py-3 bg-stone-800 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-300">
                   <option value="">Selecciona un asunto</option>
                   <option value="pedido">Consulta sobre pedido</option>
                   <option value="reserva">Reserva de mesa</option>
@@ -159,12 +191,12 @@ export default function ContactoSection() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2 text-stone-300">Mensaje</label>
-                <textarea rows={4} placeholder="Escribe tu mensaje aquí..."
+                <textarea name="message" value={formData.message} onChange={handleChange} rows={4} placeholder="Escribe tu mensaje aquí..." required
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-stone-500 resize-none" />
               </div>
-              <button type="submit"
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/30">
-                🔥 Enviar Mensaje
+              <button type="submit" disabled={sending}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-60">
+                {sending ? "✉️ Enviando..." : "🔥 Enviar Mensaje"}
               </button>
             </form>
           </div>

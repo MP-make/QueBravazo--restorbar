@@ -52,11 +52,11 @@ export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
         />
       )}
 
-      {/* Drawer */}
+      {/* Drawer - full screen mobile (con espacio para nav inferior), lateral desktop */}
       <div
-        className={`fixed right-0 top-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
+        className={`fixed z-50 bg-white shadow-2xl transform transition-transform duration-300 ${
           visible ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        } inset-0 bottom-16 md:bottom-0 md:inset-auto md:right-0 md:top-0 md:h-full md:w-80`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
