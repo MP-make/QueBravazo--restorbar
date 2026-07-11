@@ -146,7 +146,7 @@ export default function CheckoutPage() {
     // Validation
     const newErrors: Record<string, boolean> = {
       name: !customerName.trim(),
-      phone: phone.length !== 9 || !phone.startsWith('9'),
+      phone: phone.length < 7,
       address: isJardines ? false : !address.trim(),
       jardinesManzana: isJardines ? !jardinesManzana.trim() : false,
       jardinesLote: isJardines ? !jardinesLote.trim() : false,
@@ -246,9 +246,9 @@ export default function CheckoutPage() {
           <h1 className="text-xl md:text-3xl font-bold text-stone-800">Finalizar Pedido</h1>
         </div>
 
-        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8 lg:min-h-0">
           {/* Resumen del Pedido — first in DOM so it appears on top on mobile */}
-          <div className="sticky top-14 z-10 lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
+          <div className="sticky top-[56px] z-10 lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
             <div className="bg-white rounded-2xl shadow-sm p-3 sm:p-5">
               <h3 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4">Tu Pedido</h3>
               
@@ -337,18 +337,16 @@ export default function CheckoutPage() {
                         value={phone}
                         onChange={(e) => {
                           const value = e.target.value.replace(/[^0-9]/g, '');
-                          if (value.length === 0 || (value[0] === '9' && value.length <= 9)) {
-                            setPhone(value);
-                          }
+                          if (value.length <= 15) setPhone(value);
                         }}
                         className={`flex-1 px-3 md:px-4 py-2.5 md:py-3 border rounded-r-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm md:text-base text-gray-900 ${
                           errors.phone ? 'border-red-500 bg-red-50' : 'border-stone-200'
                         }`}
                         placeholder="946826535"
-                        maxLength={9}
+                        maxLength={15}
                       />
                     </div>
-                    {errors.phone && <p className="text-red-500 text-sm mt-1">Debe ser un número de 9 dígitos que empiece con 9</p>}
+                    {errors.phone && <p className="text-red-500 text-sm mt-1">Ingresa un número válido</p>}
                   </div>
                 </div>
 
