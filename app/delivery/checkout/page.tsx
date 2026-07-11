@@ -248,7 +248,7 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 md:gap-8 lg:min-h-0">
           {/* Resumen del Pedido — first in DOM so it appears on top on mobile */}
-          <div className="sticky top-[56px] z-10 lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 self-start">
+          <div className="sticky top-[56px] z-10 lg:sticky lg:top-4 lg:col-start-3 lg:col-end-4 lg:row-start-1 lg:self-start">
             <div className="bg-white rounded-2xl shadow-sm p-3 sm:p-5">
               <h3 className="text-base md:text-xl font-bold text-stone-800 mb-3 md:mb-4">Tu Pedido</h3>
               
