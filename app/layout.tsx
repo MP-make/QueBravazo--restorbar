@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Restobar de comida rápida peruana — Broaster, hamburguesas, alitas BBQ, cervezas y más. Delivery en Lima.",
   icons: {
     icon: [
-      { url: "/icon.jpg", sizes: "any", type: "image/jpeg" },
+      { url: "/favicon.webp", sizes: "any", type: "image/webp" },
     ],
   },
 };

@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "¡Qué Bravazo! Restobar",
   description: "Restobar de comida rápida peruana — Broaster, hamburguesas, alitas BBQ, cervezas y más. Delivery en Lima.",
+  icons: {
+    icon: [
+      { url: "/favicon.webp", sizes: "any", type: "image/webp" },
+    ],
+  },
 };
 
 export default function RootLayout({

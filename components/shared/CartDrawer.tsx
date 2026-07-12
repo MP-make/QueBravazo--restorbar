@@ -56,7 +56,7 @@ export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
       <div
         className={`fixed z-50 bg-white shadow-2xl transform transition-transform duration-300 ${
           visible ? 'translate-x-0' : 'translate-x-full'
-        } inset-0 bottom-16 md:bottom-0 md:inset-auto md:right-0 md:top-0 md:h-full md:w-80`}
+        } inset-0 bottom-16 md:bottom-0 md:inset-auto md:right-0 md:top-0 md:h-full md:w-[420px]`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
@@ -90,17 +90,17 @@ export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
                     <h3 className="font-semibold text-gray-900">{item.title}</h3>
                     <p className="text-sm text-orange-600 font-bold">S/ {item.price.toFixed(2)}</p>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center bg-zinc-100 rounded-lg overflow-hidden">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="w-8 h-8 border border-gray-200 hover:bg-gray-100 rounded-md flex items-center justify-center text-gray-700 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-200 transition-colors text-lg"
                     >
-                      -
+                      −
                     </button>
-                    <span className="w-8 text-center font-medium">{item.quantity}</span>
+                    <span className="w-8 text-center font-bold text-zinc-900 text-sm">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-8 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded-md flex items-center justify-center transition-colors"
+                      className="w-8 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-200 transition-colors text-lg"
                     >
                       +
                     </button>
@@ -148,15 +148,15 @@ export const CartDrawer = ({ visible, onClose, bebidas }: CartDrawerProps) => {
         {/* Footer */}
         {items.length > 0 && (
           <div className="border-t p-4 bg-gray-50">
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal:</span>
-                <span className="text-orange-600 font-bold">S/ {subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total:</span>
-                <span className="text-orange-600 font-bold">S/ {total.toFixed(2)}</span>
-              </div>
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-700">Subtotal:</span>
+                  <span className="text-orange-600 font-bold">S/ {subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xl font-extrabold">
+                  <span className="text-zinc-900">Total:</span>
+                  <span className="text-orange-600">S/ {total.toFixed(2)}</span>
+                </div>
             </div>
             <button
               onClick={handleCheckout}

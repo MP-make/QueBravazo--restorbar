@@ -25,10 +25,13 @@ interface SectionInfo {
 const SECTIONS: SectionInfo[] = [
   { id: 'combos', label: 'Combos', desc: 'Para compartir con la gente', keywords: ['combo', 'promo', 'oferta', 'happy hour', '2x1'] },
   { id: 'platos-fuertes', label: 'Platos Fuertes', desc: 'Broaster, hamburguesas, alitas', keywords: ['pollo', 'broaster', 'hamburguesa', 'alita', 'presa', 'comida', 'platillo', 'fritura', 'parrilla', 'carne', 'chicharron'] },
-  { id: 'bebidas', label: 'Bebidas', desc: 'Gaseosas, jugos, tragos', keywords: ['gaseosa', 'bebida', 'refresco', 'cola', 'agua', 'jugo', 'cerveza', 'trago', 'licor', 'coctel', 'ron', 'pisco', 'vodka', 'whisky', 'marciano', 'mike'] },
   { id: 'postres', label: 'Postres', desc: 'Dulces y más', keywords: ['postre', 'dulce', 'helado', 'pie', 'torta'] },
   { id: 'ensaladas', label: 'Ensaladas', desc: 'Frescas y saludables', keywords: ['ensalada', 'verdura', 'vegetal', 'salad'] },
   { id: 'salsas', label: 'Salsas & Cremas', desc: 'Acompañantes', keywords: ['salsa', 'crema', 'aderezo', 'mayonesa', 'ketchup', 'mostaza'] },
+  { id: 'caldos', label: 'Caldos', desc: 'Calientes y reconfortantes', keywords: ['caldo', 'sopa', 'consome'] },
+  { id: 'platos-a-la-carta', label: 'Platos a la Carta', desc: 'Preparaciones especiales', keywords: ['plato a la carta', 'a la carta'] },
+  { id: 'cocteles', label: 'Cocteles', desc: 'Tragos y más', keywords: ['trago', 'coctel', 'licor', 'ron', 'pisco', 'vodka', 'whisky', 'marciano', 'mike'] },
+  { id: 'bebidas', label: 'Bebidas', desc: 'Gaseosas, jugos, tragos', keywords: ['gaseosa', 'bebida', 'refresco', 'cola', 'agua', 'jugo', 'cerveza', 'trago', 'licor', 'coctel', 'ron', 'pisco', 'vodka', 'whisky', 'marciano', 'mike'] },
   { id: 'extras', label: 'Extras', desc: 'Complementos', keywords: [] },
 ];
 

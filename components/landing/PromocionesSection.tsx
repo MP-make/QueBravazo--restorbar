@@ -36,7 +36,7 @@ export default function PromocionesSection({ products }: PromocionesSectionProps
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
-    addToast(`✅ ${product.title} agregado al carrito`);
+    addToast({ title: '¡Añadido al carrito!', subtitle: `1x ${product.title}` });
   };
 
   const combos = comboData.map(data => {

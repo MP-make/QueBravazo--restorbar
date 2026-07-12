@@ -2,27 +2,29 @@ import { create } from 'zustand';
 
 interface Toast {
   id: string;
-  message: string;
+  title: string;
+  subtitle?: string;
   type: 'success' | 'error';
 }
 
 interface ToastState {
   toasts: Toast[];
-  addToast: (message: string, type?: 'success' | 'error') => void;
+  addToast: (input: string | { title: string; subtitle?: string }, type?: 'success' | 'error') => void;
   removeToast: (id: string) => void;
 }
 
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
-  addToast: (message, type = 'success') => {
+  addToast: (input, type = 'success') => {
     const id = Date.now().toString();
+    const title = typeof input === 'string' ? input : input.title;
+    const subtitle = typeof input === 'string' ? undefined : input.subtitle;
     set((state) => ({
-      toasts: [...state.toasts, { id, message, type }],
+      toasts: [...state.toasts, { id, title, subtitle, type }],
     }));
-    // Auto remove after 3 seconds
     setTimeout(() => {
       get().removeToast(id);
-    }, 3000);
+    }, 3200);
   },
   removeToast: (id) => {
     set((state) => ({

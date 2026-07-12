@@ -16,14 +16,18 @@ export function useProductActions() {
     
     addItem(cartItem);
 
-    // Mostrar toast según el modo
-    const messages = {
-      delivery: `${product.title} agregado al carrito`,
-      waiter: `${product.title} agregado a la comanda`,
-      menu: `${product.title} agregado`,
+    const titles: Record<string, string> = {
+      delivery: '¡Añadido al carrito!',
+      waiter: '¡Pedido enviado a cocina!',
+      menu: '¡Agregado!',
+    };
+    const subtitles: Record<string, string> = {
+      delivery: `1x ${product.title} listo para marchar`,
+      waiter: `1x ${product.title} en la comanda`,
+      menu: `1x ${product.title}`,
     };
 
-    addToast(messages[mode], 'success');
+    addToast({ title: titles[mode], subtitle: subtitles[mode] }, 'success');
   };
 
   return {

@@ -282,7 +282,7 @@ export default function Navbar() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 addItem(product);
-                                addToast(`${product.title} agregado al carrito`, 'success');
+                                addToast({ title: '¡Añadido al carrito!', subtitle: `1x ${product.title}` }, 'success');
                               }}
                               className="w-7 h-7 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0"
                             >
