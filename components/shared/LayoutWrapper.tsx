@@ -15,7 +15,8 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const noNavbar = pathname?.startsWith('/waiter') || 
                    pathname === '/login' || 
                    pathname === '/register' ||
-                   pathname?.startsWith('/delivery/checkout');
+                   pathname?.startsWith('/delivery/checkout') ||
+                   pathname?.startsWith('/admin');
 
   const isMenu = pathname === '/menu';
   const isHome = pathname === '/';

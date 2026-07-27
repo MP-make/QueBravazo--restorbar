@@ -1,6 +1,9 @@
 "use client";
 import Image from 'next/image';
 import { Product } from '@/types';
+import { useHomepageContent } from '@/lib/hooks/useHomepageContent';
+
+const CARD_IMAGE_KEYS = ['fuego_card_1_image', 'fuego_card_2_image', 'fuego_card_3_image'] as const;
 
 const TOP_PRODUCTS = [
   { rankName: '#2 Vendido', category: 'HAMBURGUESAS', search: ['que bravazo', 'bravazo'], name: 'QUE BRAVAZO!', price: 18.00, emoji: '🍔' },
@@ -22,17 +25,18 @@ interface FuegoSectionProps {
 }
 
 export default function FuegoSection({ products }: FuegoSectionProps) {
+  const content = useHomepageContent();
+
   return (
     <section className="w-full bg-gradient-to-r from-[#e64a19] to-[#ff5722]">
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
             <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-widest leading-[1.1] mb-6">
-              ¿Por qué somos <span className="text-black">bravazos</span>?
+              {content.fuego_title}
             </h2>
             <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-md">
-              Hamburguesas 100% artesanales, alitas BBQ adictivas y la mejor barra de tragos de Pisco. 
-              Todo hecho con sazón peruana y el fuelle que solo un verdadero bravazo puede dar.
+              {content.fuego_description}
             </p>
             <div className="flex items-center gap-4 mt-8">
               <div className="flex -space-x-2">
@@ -48,12 +52,14 @@ export default function FuegoSection({ products }: FuegoSectionProps) {
 
           <div className="grid grid-cols-3 gap-3 md:gap-4">
             {TOP_PRODUCTS.map((item, i) => {
+              const cardImage = content[CARD_IMAGE_KEYS[i]];
               const productImage = findProductImage(products, item.search);
+              const image = cardImage || productImage;
               return (
                 <div key={i} className="relative aspect-[9/16] rounded-2xl overflow-hidden bg-[#1e1e20] border border-white/10 group shadow-xl shadow-black/30">
                   <div className="absolute inset-0">
-                    {productImage ? (
-                      <Image src={productImage} alt={item.name} fill className="object-cover" />
+                    {image ? (
+                      <Image src={image} alt={item.name} fill className="object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-stone-700 to-stone-900" />
                     )}

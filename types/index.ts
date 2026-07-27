@@ -10,6 +10,7 @@ export interface Product {
   price: number;
   image: string;       // Mapeado desde 'imageUrl'
   category: string;
+  category_slug?: string; // Slug de la categoría local mapeada (desde product_mappings)
   description?: string;
   stock: number;
   featured?: boolean;  // Producto destacado en landing

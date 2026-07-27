@@ -57,10 +57,11 @@ export const fetchProducts = async (): Promise<Product[]> => {
     return ventifyProducts.map((item: any) => ({
       id: item.id,
       sku: item.sku || item.id,
-      title: item.title,           // ✅ ya viene como 'title' (mapeado en route.ts)
+      title: item.title,
       price: item.price,
-      image: item.image || '/logo-que-bravazo.png',  // ✅ ya viene como 'image'
+      image: item.image || '/logo-que-bravazo.png',
       category: item.category || 'Otros',
+      category_slug: item.category_slug || null,
       description: item.description || '',
       stock: item.stock ?? 0,
       featured: item.featured || false,

@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { Product } from '@/types';
+import { useHomepageContent } from '@/lib/hooks/useHomepageContent';
 
 const COMBO_KEYWORDS = ['combo', 'promo', 'oferta', 'happy hour', '2x1'];
 
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function CommunitySection({ products }: Props) {
+  const content = useHomepageContent();
   const combos = products.filter(isCombo).slice(0, 6);
   return (
     <section className="w-full bg-black">
@@ -26,13 +28,13 @@ export default function CommunitySection({ products }: Props) {
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
               <svg className="w-4 h-4 text-[#ff5722]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-              <span className="text-white text-xs font-bold tracking-wider">@quebravazorestobar</span>
+              <span className="text-white text-xs font-bold tracking-wider">{content.community_handle}</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-widest leading-[1.1] mb-4">
-              El muro de la <span className="text-[#ff5722]">comunidad</span>
+              {content.community_title}
             </h2>
             <p className="text-stone-500 text-sm leading-relaxed mb-6 max-w-sm">
-              Mira cómo disfruta nuestra gente y comparte tu momento más bravazo.
+              {content.community_description}
             </p>
             <Link
               href="https://www.instagram.com/quebravazorestobar?igsh=dGF6Znd3anJjNDk0"

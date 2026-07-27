@@ -17,11 +17,13 @@ interface AuthState {
   isLoading: boolean;
   user: UserProfile | null;
   firebaseUser: User | null;
+  isHydrated: boolean;
   
   // Acciones
   setUser: (user: UserProfile | null) => void;
   setFirebaseUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
+  setHydrated: (hydrated: boolean) => void;
   login: (user: UserProfile) => void;
   logout: () => void;
   
@@ -39,11 +41,13 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       user: null,
       firebaseUser: null,
+      isHydrated: false,
       
       // Setters
       setUser: (user) => set({ user, isLoggedIn: !!user }),
       setFirebaseUser: (firebaseUser) => set({ firebaseUser }),
       setLoading: (isLoading) => set({ isLoading }),
+      setHydrated: (isHydrated) => set({ isHydrated }),
       
       // Login
       login: (user) => set({ 
@@ -77,11 +81,16 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'ventify-auth', // nombre en localStorage
+      name: 'ventify-auth',
       partialize: (state) => ({ 
         user: state.user,
         isLoggedIn: state.isLoggedIn 
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated(true);
+        }
+      },
     }
   )
 );

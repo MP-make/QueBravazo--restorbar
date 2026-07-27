@@ -2,14 +2,18 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle, CreditCard } from 'lucide-react';
+import { useHomepageContent } from '@/lib/hooks/useHomepageContent';
 
 export default function ContactBlock() {
+  const content = useHomepageContent();
   const [form, setForm] = useState({ name: '', phone: '', subject: '', message: '' });
+
+  const whatsappNumber = content.contact_whatsapp.replace(/[^0-9]/g, '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = `*Nuevo Mensaje - ¡Qué Bravazo!*%0A%0A*Nombre:* ${form.name}%0A*Teléfono:* ${form.phone}%0A*Asunto:* ${form.subject}%0A*Mensaje:* ${form.message}`;
-    window.open(`https://wa.me/51946826535?text=${text}`, '_blank');
+    window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
   };
 
   return (
@@ -21,7 +25,7 @@ export default function ContactBlock() {
             ¿Dónde encontrarnos o hacer tu pedido?
           </h2>
           <p className="text-stone-500 text-sm mt-3 max-w-lg mx-auto">
-            Visítanos en nuestro local o pide por delivery. ¡También puedes escribirnos al WhatsApp!
+            {content.contact_description}
           </p>
         </div>
 
@@ -79,9 +83,8 @@ export default function ContactBlock() {
               </div>
               <p className="text-xs text-stone-500 font-bold tracking-widest uppercase mb-1">Dirección</p>
               <p className="text-sm text-white font-medium leading-relaxed">
-                Urb. Los Jardines de San Andrés<br />Pisco, Ica
+                {content.contact_address}
               </p>
-              <p className="text-[11px] text-stone-500 mt-2">(Consulta por WhatsApp)</p>
             </div>
 
             <div className="bg-[#1e1e20] rounded-2xl border border-white/5 p-5">
@@ -89,9 +92,9 @@ export default function ContactBlock() {
                 <MessageCircle className="w-4 h-4 text-[#ff5722]" />
               </div>
               <p className="text-xs text-stone-500 font-bold tracking-widest uppercase mb-1">WhatsApp / Pedidos</p>
-              <p className="text-sm text-white font-bold">+51 946 826 535</p>
+              <p className="text-sm text-white font-bold">{content.contact_whatsapp}</p>
               <a
-                href="https://wa.me/51946826535"
+                href={`https://wa.me/${whatsappNumber}`}
                 target="_blank"
                 className="inline-flex items-center gap-1 text-[11px] text-[#ff5722] font-bold hover:text-orange-400 mt-2 transition-colors"
               >
@@ -104,7 +107,7 @@ export default function ContactBlock() {
                 <Mail className="w-4 h-4 text-[#ff5722]" />
               </div>
               <p className="text-xs text-stone-500 font-bold tracking-widest uppercase mb-1">Email</p>
-              <p className="text-sm text-white font-medium break-all">quebravazorestobar@gmail.com</p>
+              <p className="text-sm text-white font-medium break-all">{content.contact_email}</p>
             </div>
 
             <div className="bg-[#1e1e20] rounded-2xl border border-white/5 p-5">
@@ -113,8 +116,9 @@ export default function ContactBlock() {
               </div>
               <p className="text-xs text-stone-500 font-bold tracking-widest uppercase mb-1">Horario</p>
               <div className="text-sm text-white font-medium space-y-0.5">
-                <p>Lun – Sáb: 12pm – 11pm</p>
-                <p>Dom: 12pm – 9pm</p>
+                {content.contact_hours.map((h, i) => (
+                  <p key={i}>{h}</p>
+                ))}
               </div>
             </div>
           </div>

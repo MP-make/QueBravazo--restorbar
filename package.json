@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.8",
+    "bcryptjs": "^3.0.3",
     "firebase": "^12.8.0",
     "lightningcss-linux-x64-gnu": "^1.30.2",
     "lucide-react": "^0.562.0",

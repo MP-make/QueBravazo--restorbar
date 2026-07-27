@@ -5,11 +5,14 @@ import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { useUIStore } from '@/lib/stores/ui';
 import { useSearchStore } from '@/lib/stores/search';
+import { useHomepageContent } from '@/lib/hooks/useHomepageContent';
 
 export default function LandingHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { setIsCartOpen } = useUIStore();
   const { setIsOpen: setIsSearchOpen } = useSearchStore();
+  const content = useHomepageContent();
+  const whatsappNumber = content.contact_whatsapp.replace(/[^0-9]/g, '');
 
   return (
     <>
@@ -62,13 +65,13 @@ export default function LandingHeader() {
               <div className="space-y-4">
                 <div>
                   <p className="text-zinc-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">PEDIDOS & RESERVAS</p>
-                  <a href="https://wa.me/51946826535" target="_blank" rel="noopener noreferrer" className="text-zinc-400 text-sm hover:text-white transition-colors">
-                    +51 946 826 535
+                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="text-zinc-400 text-sm hover:text-white transition-colors">
+                    {content.contact_whatsapp}
                   </a>
                 </div>
                 <div>
                   <p className="text-zinc-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">VISÍTANOS</p>
-                  <p className="text-zinc-400 text-sm">Urb. Los Jardines de San Andrés, Pisco</p>
+                  <p className="text-zinc-400 text-sm">{content.contact_address}</p>
                 </div>
                 <div className="flex items-center gap-4 pt-2">
                   <a href="https://www.instagram.com/quebravazorestobar?igsh=dGF6Znd3anJjNDk0" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-orange-500 transition-colors" aria-label="Instagram">

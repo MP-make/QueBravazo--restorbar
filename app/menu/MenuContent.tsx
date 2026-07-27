@@ -14,34 +14,36 @@ interface MenuContentProps {
   initialProducts: Product[];
 }
 
-interface SectionInfo {
-  id: string;
-  icon?: string;
-  label: string;
-  desc: string;
-  keywords: string[];
+interface CategoryInfo {
+  name: string;
+  slug: string;
+  description: string;
 }
 
-const SECTIONS: SectionInfo[] = [
-  { id: 'combos', label: 'Combos', desc: 'Para compartir con la gente', keywords: ['combo', 'promo', 'oferta', 'happy hour', '2x1'] },
-  { id: 'platos-fuertes', label: 'Platos Fuertes', desc: 'Broaster, hamburguesas, alitas', keywords: ['pollo', 'broaster', 'hamburguesa', 'alita', 'presa', 'comida', 'platillo', 'fritura', 'parrilla', 'carne', 'chicharron'] },
-  { id: 'postres', label: 'Postres', desc: 'Dulces y más', keywords: ['postre', 'dulce', 'helado', 'pie', 'torta'] },
-  { id: 'ensaladas', label: 'Ensaladas', desc: 'Frescas y saludables', keywords: ['ensalada', 'verdura', 'vegetal', 'salad'] },
-  { id: 'salsas', label: 'Salsas & Cremas', desc: 'Acompañantes', keywords: ['salsa', 'crema', 'aderezo', 'mayonesa', 'ketchup', 'mostaza'] },
-  { id: 'caldos', label: 'Caldos', desc: 'Calientes y reconfortantes', keywords: ['caldo', 'sopa', 'consome'] },
-  { id: 'platos-a-la-carta', label: 'Platos a la Carta', desc: 'Preparaciones especiales', keywords: ['plato a la carta', 'a la carta'] },
-  { id: 'cocteles', label: 'Cocteles', desc: 'Tragos y más', keywords: ['trago', 'coctel', 'licor', 'ron', 'pisco', 'vodka', 'whisky', 'marciano', 'mike'] },
-  { id: 'bebidas', label: 'Bebidas', desc: 'Gaseosas, jugos, tragos', keywords: ['gaseosa', 'bebida', 'refresco', 'cola', 'agua', 'jugo', 'cerveza', 'trago', 'licor', 'coctel', 'ron', 'pisco', 'vodka', 'whisky', 'marciano', 'mike'] },
-  { id: 'extras', label: 'Extras', desc: 'Complementos', keywords: [] },
-];
+const FALLBACK_KEYWORDS: Record<string, string[]> = {
+  'platos-fuertes': ['pollo', 'broaster', 'hamburguesa', 'alita', 'presa', 'comida', 'platillo', 'fritura', 'parrilla', 'carne', 'chicharron'],
+  'bebidas': ['gaseosa', 'bebida', 'refresco', 'cola', 'agua', 'jugo', 'cerveza', 'trago', 'licor', 'coctel', 'ron', 'pisco', 'vodka', 'whisky'],
+};
 
-function getSectionForCategory(category: string): string {
+function matchFallback(category: string): string {
   const lower = (category || '').toLowerCase();
-  for (const s of SECTIONS) {
-    if (s.id === 'extras') continue;
-    if (s.keywords.some((kw) => lower.includes(kw))) return s.id;
+  for (const [slug, keywords] of Object.entries(FALLBACK_KEYWORDS)) {
+    if (keywords.some((kw) => lower.includes(kw))) return slug;
   }
-  return 'extras';
+  return '';
+}
+
+function getProductSlug(p: Product, categories: CategoryInfo[]): string {
+  if (p.category_slug) {
+    if (categories.some((c) => c.slug === p.category_slug)) return p.category_slug;
+    if (p.category_slug === 'extras') return 'extras';
+  }
+  const lower = (p.category || '').toLowerCase();
+  for (const cat of categories) {
+    const nameLower = cat.name.toLowerCase();
+    if (lower.includes(nameLower) || lower.includes(cat.slug.replace(/-/g, ' '))) return cat.slug;
+  }
+  return matchFallback(p.category || '');
 }
 
 function MenuProductCard({ product }: { product: Product }) {
@@ -86,59 +88,101 @@ function MenuProductCard({ product }: { product: Product }) {
 }
 
 export default function MenuContent({ initialProducts }: MenuContentProps) {
-  const [activeSection, setActiveSection] = useState('combos');
+  const [activeSection, setActiveSection] = useState('');
   const [search, setSearch] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [categories, setCategories] = useState<CategoryInfo[]>([]);
+  const [activeCategorySlugs, setActiveCategorySlugs] = useState<Set<string> | null>(null);
   const { isCartOpen, setIsCartOpen } = useUIStore();
   const { items } = useCartStore();
   const { setIsOpen: setIsSearchOpen } = useSearchStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
+  useEffect(() => {
+    fetch('/api/schedules/active')
+      .then((r) => r.json())
+      .then((sched) => {
+        const activeType = sched.active_types?.[0] || null;
+        if (!activeType) {
+          setActiveCategorySlugs(new Set());
+          setCategories([]);
+          return;
+        }
+        return fetch(`/api/categories?menu_type=${activeType}`)
+          .then((r) => r.json())
+          .then((json) => {
+            if (json.data) {
+              setCategories(json.data.map((c: any) => ({ name: c.name, slug: c.slug, description: c.description || '' })));
+              setActiveCategorySlugs(new Set(json.data.map((c: { slug: string }) => c.slug)));
+            } else {
+              console.error('Categories API error:', json.error);
+            }
+          });
+      })
+      .catch((err) => {
+        console.error('Schedule/categories fetch error:', err);
+      });
+  }, []);
+
+  const filteredProducts = useMemo(
+    () => initialProducts.filter((p) => p.title?.trim() && p.price > 0),
+    [initialProducts],
+  );
+
   const sectionMap = useMemo(() => {
     const map = new Map<string, Product[]>();
-    for (const s of SECTIONS) map.set(s.id, []);
-    for (const p of initialProducts) {
-      const secId = getSectionForCategory(p.category || '');
-      const arr = map.get(secId);
-      if (arr) arr.push(p);
+    for (const cat of categories) map.set(cat.slug, []);
+    for (const p of filteredProducts) {
+      const slug = getProductSlug(p, categories);
+      if (slug && map.has(slug)) map.get(slug)!.push(p);
     }
     return map;
-  }, [initialProducts]);
+  }, [filteredProducts, categories]);
 
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return null;
-    return initialProducts.filter(
+    return filteredProducts.filter(
       (p) =>
         (p.title || '').toLowerCase().includes(q) ||
         (p.category || '').toLowerCase().includes(q) ||
         (p.description || '').toLowerCase().includes(q)
     );
-  }, [initialProducts, search]);
+  }, [filteredProducts, search]);
 
   const visibleSections = useMemo(() => {
     if (search) {
       const secs = new Set<string>();
-      for (const p of searchResults!) secs.add(getSectionForCategory(p.category || ''));
+      for (const p of searchResults!) {
+        const slug = getProductSlug(p, categories);
+        if (slug) secs.add(slug);
+      }
       return Array.from(secs);
     }
-    return SECTIONS.filter((s) => (sectionMap.get(s.id)?.length ?? 0) > 0).map((s) => s.id);
-  }, [search, searchResults, sectionMap]);
+    return categories
+      .filter((c) => {
+        if ((sectionMap.get(c.slug)?.length ?? 0) === 0) return false;
+        if (activeCategorySlugs && !activeCategorySlugs.has(c.slug)) return false;
+        return true;
+      })
+      .map((c) => c.slug);
+  }, [search, searchResults, sectionMap, activeCategorySlugs, categories]);
 
   const categorizedSearch = useMemo(() => {
     if (!search) return null;
     const map = new Map<string, Product[]>();
     for (const p of searchResults!) {
-      const secId = getSectionForCategory(p.category || '');
-      if (!map.has(secId)) map.set(secId, []);
-      map.get(secId)!.push(p);
+      const slug = getProductSlug(p, categories);
+      if (!slug) continue;
+      if (!map.has(slug)) map.set(slug, []);
+      map.get(slug)!.push(p);
     }
     return map;
-  }, [search, searchResults]);
+  }, [search, searchResults, categories]);
 
   const bebidas = useMemo(
-    () => initialProducts.filter((p) => getSectionForCategory(p.category || '') === 'bebidas'),
-    [initialProducts]
+    () => filteredProducts.filter((p) => getProductSlug(p, categories) === 'bebidas'),
+    [filteredProducts, categories]
   );
 
   const scrollToSection = (id: string) => {
@@ -149,7 +193,12 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // Intersection Observer — active pill se actualiza al scrollear
+  useEffect(() => {
+    if (categories.length > 0 && !activeSection) {
+      setActiveSection(categories[0].slug);
+    }
+  }, [categories, activeSection]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -167,20 +216,27 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
     return () => observer.disconnect();
   }, [visibleSections]);
 
+  useEffect(() => {
+    if (categories.length > 0 && filteredProducts.length > 0) {
+      console.log('DEBUG categories:', categories.map((c) => c.slug));
+      console.log('DEBUG activeCategorySlugs:', activeCategorySlugs ? [...activeCategorySlugs] : null);
+      console.log('DEBUG sectionMap sizes:', [...sectionMap.entries()].map(([k, v]) => `${k}:${v.length}`));
+      console.log('DEBUG visibleSections:', visibleSections);
+      console.log('DEBUG products sample:', JSON.stringify(filteredProducts.slice(0, 5).map((p) => ({ id: p.id, title: p.title, category: p.category, category_slug: p.category_slug })), null, 2));
+      console.log('DEBUG broster products:', JSON.stringify(filteredProducts.filter((p) => p.category === 'Frituras' || p.category_slug === 'broster' || p.category_slug === 'alitas-broster').map((p) => ({ title: p.title, category: p.category, category_slug: p.category_slug })), null, 2));
+    }
+  }, [categories, filteredProducts, sectionMap, visibleSections, activeCategorySlugs]);
+
   return (
     <div className="min-h-screen relative pt-0 md:pt-20">
       <div className="fixed inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/menú.webp)' }} />
       <div className="fixed inset-0 bg-black/80" />
 
       <div className="relative z-10">
-        {/* ════════════════════════════════════════
-            SIDEBAR — overlay + panel deslizante
-        ════════════════════════════════════════ */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
             <aside className="absolute left-0 top-0 h-screen w-[320px] bg-[#1a1a1d] border-r border-white/10 shadow-2xl shadow-black/50 flex flex-col justify-between translate-x-0 animate-slide-in" style={{ fontFamily: 'var(--font-sans)' }}>
-              {/* BLOQUE SUPERIOR: Header + Buscador + Enlaces */}
               <div>
                 <div className="flex items-center justify-between px-5 h-16 border-b border-white/5">
                   <Link href="/" className="flex items-center gap-3">
@@ -225,10 +281,8 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
                 </div>
               </div>
 
-              {/* ESPACIADOR CENTRAL */}
               <div className="flex-1" />
 
-              {/* BLOQUE INFERIOR: Contacto y Redes */}
               <div className="px-5 py-6 border-t border-zinc-800">
                 <div className="space-y-4">
                   <div>
@@ -258,9 +312,6 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
           </div>
         )}
 
-        {/* ════════════════════════════════════════
-            HEADER DESKTOP (oculto en mobile)
-        ════════════════════════════════════════ */}
         <div className="hidden md:block fixed top-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/5 w-full">
           <div className="w-full px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -298,9 +349,6 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
           </div>
         </div>
 
-        {/* ════════════════════════════════════════
-            BLOQUE DE PRESENTACIÓN
-        ════════════════════════════════════════ */}
         <div className="text-center pt-10 pb-6 md:pt-14 md:pb-8 px-4">
           <p className="text-[#ff5722] text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-2">
             Tus favoritos en un solo lugar
@@ -311,13 +359,8 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
           <p className="text-stone-500 text-xs md:text-sm mt-2 max-w-md mx-auto">
             Broaster · Hamburguesas · Alitas · Cervezas · Tragos
           </p>
-
-
         </div>
 
-        {/* ════════════════════════════════════════
-            PILL NAV — sticky con fondo + blur
-        ════════════════════════════════════════ */}
         <div className="sticky top-0 md:top-16 z-40 bg-black py-4">
           <div className="w-full px-6 flex justify-center">
             <div className="inline-flex bg-[#ff5722] rounded-full p-1.5 shadow-lg shadow-orange-500/20 max-w-full">
@@ -325,19 +368,19 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
                 className="flex items-center gap-1 overflow-x-auto snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                {SECTIONS.filter((s) => visibleSections.includes(s.id)).map((s) => {
-                  const isActive = !search && activeSection === s.id;
+                {categories.filter((c) => visibleSections.includes(c.slug)).map((c) => {
+                  const isActive = !search && activeSection === c.slug;
                   return (
                     <button
-                      key={s.id}
-                      onClick={() => scrollToSection(s.id)}
+                      key={c.slug}
+                      onClick={() => scrollToSection(c.slug)}
                       className={`flex-shrink-0 px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-full transition-all duration-300 snap-center flex items-center gap-1 ${
                         isActive
                           ? 'bg-white text-[#ff5722] shadow-md scale-105'
                           : 'text-white/90 hover:bg-white/10'
                       }`}
                     >
-                      <span>{s.label}</span>
+                      <span>{c.name}</span>
                     </button>
                   );
                 })}
@@ -346,15 +389,12 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
           </div>
         </div>
 
-        {/* ════════════════════════════════════════
-            CONTENIDO
-        ════════════════════════════════════════ */}
         <main className="max-w-7xl mx-auto px-6 pb-32">
           {search && (
             <div className="py-4">
               <p className="text-stone-400 text-sm">
                 <span className="font-semibold text-white">{searchResults?.length ?? 0}</span> resultado{searchResults?.length !== 1 ? 's' : ''} para{' '}
-                <span className="text-[#ff5722] font-semibold">"{search}"</span>
+                <span className="text-[#ff5722] font-semibold">&quot;{search}&quot;</span>
                 <button onClick={() => setSearch('')} className="ml-2 text-xs text-orange-400 hover:text-orange-300 font-semibold">Limpiar</button>
               </p>
             </div>
@@ -372,7 +412,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
 
           <div>
             {visibleSections.map((secId, idx) => {
-              const secInfo = SECTIONS.find((s) => s.id === secId)!;
+              const cat = categories.find((c) => c.slug === secId)!;
               const products = search ? (categorizedSearch?.get(secId) ?? []) : (sectionMap.get(secId) ?? []);
               if (products.length === 0) return null;
 
@@ -381,14 +421,15 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
                   <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6 lg:gap-8 xl:gap-12 py-8 lg:py-10">
                     <div className="min-w-0">
                       <div className="lg:sticky lg:top-44 flex lg:flex-col items-start gap-3 lg:gap-2">
-                        <span className="text-2xl lg:text-3xl">{secInfo.icon}</span>
                         <div>
                           <h2 className="text-lg lg:text-xl font-black text-white uppercase tracking-widest leading-tight">
-                            {secInfo.label}
+                            {cat.name}
                           </h2>
-                          <p className="text-xs text-stone-500 mt-0.5 lg:mt-1 leading-relaxed">
-                            {secInfo.desc}
-                          </p>
+                          {cat.description && (
+                            <p className="text-xs text-stone-500 mt-0.5 lg:mt-1 leading-relaxed">
+                              {cat.description}
+                            </p>
+                          )}
                           <p className="text-[10px] text-stone-600 font-medium mt-1">
                             {products.length} producto{products.length !== 1 ? 's' : ''}
                           </p>

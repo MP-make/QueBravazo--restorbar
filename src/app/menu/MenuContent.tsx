@@ -89,10 +89,25 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
   const [activeSection, setActiveSection] = useState('combos');
   const [search, setSearch] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeCategorySlugs, setActiveCategorySlugs] = useState<Set<string> | null>(null);
   const { isCartOpen, setIsCartOpen } = useUIStore();
   const { items } = useCartStore();
   const { setIsOpen: setIsSearchOpen } = useSearchStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
+
+  useEffect(() => {
+    fetch('/api/schedules/active')
+      .then((r) => r.json())
+      .then((sched) => {
+        const activeType = sched.active_types?.[0] || null;
+        const url = activeType ? `/api/categories?menu_type=${activeType}` : '/api/categories';
+        return fetch(url).then((r) => r.json());
+      })
+      .then((json) => {
+        if (json.data) setActiveCategorySlugs(new Set(json.data.map((c: { slug: string }) => c.slug)));
+      })
+      .catch(() => {});
+  }, []);
 
   const sectionMap = useMemo(() => {
     const map = new Map<string, Product[]>();
@@ -122,8 +137,12 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
       for (const p of searchResults!) secs.add(getSectionForCategory(p.category || ''));
       return Array.from(secs);
     }
-    return SECTIONS.filter((s) => (sectionMap.get(s.id)?.length ?? 0) > 0).map((s) => s.id);
-  }, [search, searchResults, sectionMap]);
+    return SECTIONS.filter((s) => {
+      if ((sectionMap.get(s.id)?.length ?? 0) === 0) return false;
+      if (activeCategorySlugs && !activeCategorySlugs.has(s.id)) return false;
+      return true;
+    }).map((s) => s.id);
+  }, [search, searchResults, sectionMap, activeCategorySlugs]);
 
   const categorizedSearch = useMemo(() => {
     if (!search) return null;

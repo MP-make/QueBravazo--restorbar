@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 const API_URL = process.env.NEXT_PUBLIC_VENTIFY_API_URL;
 const ACCOUNT_ID = process.env.NEXT_PUBLIC_VENTIFY_ACCOUNT_ID;
@@ -7,6 +8,30 @@ const API_KEY = process.env.NEXT_PUBLIC_VENTIFY_API_KEY;
 export async function GET() {
   if (!API_URL || !ACCOUNT_ID || !API_KEY) {
     return NextResponse.json({ error: 'Configuración no disponible' }, { status: 500 });
+  }
+
+  const productCategoryMap = new Map<string, string | null>();
+  try {
+    const supabase = createAdminClient();
+    console.log('[products API] Fetching mappings from Supabase...');
+    const [mappingsRes, categoriesRes] = await Promise.all([
+      supabase.from('product_mappings').select('ventify_id, category_id').eq('is_active', true),
+      supabase.from('categories').select('id, slug').eq('is_active', true),
+    ]);
+
+    if (mappingsRes.error) console.error('[products API] mappings error:', mappingsRes.error);
+    if (categoriesRes.error) console.error('[products API] categories error:', categoriesRes.error);
+
+    if (!mappingsRes.error && !categoriesRes.error) {
+      const categorySlugMap = new Map((categoriesRes.data || []).map((c: any) => [c.id, c.slug]));
+      console.log('[products API] categories loaded:', categorySlugMap.size);
+      for (const m of mappingsRes.data || []) {
+        productCategoryMap.set(m.ventify_id, categorySlugMap.get(m.category_id) || null);
+      }
+      console.log('[products API] product mappings count:', productCategoryMap.size);
+    }
+  } catch (e) {
+    console.error('[products API] Error fetching mappings:', e);
   }
 
   const endpoint = `${API_URL}/api/public/stores/${ACCOUNT_ID}/products?active=true`;
@@ -18,7 +43,7 @@ export async function GET() {
         'Content-Type': 'application/json',
         'X-API-Key': API_KEY,
       },
-      cache: 'no-store', // siempre fresco, sin caché de 1 hora
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -35,12 +60,16 @@ export async function GET() {
       price: item.price,
       image: item.imageUrl || '/logo-que-bravazo.png',
       category: item.category || 'Otros',
+      category_slug: productCategoryMap.get(item.id) ?? null,
       description: item.description || '',
       stock: item.stock ?? 0,
       featured: item.isFeatured || false,
       isMenuDelDia: item.isMenuDelDia || false,
       minPrice: item.minPrice || item.price * 0.5,
     }));
+
+    console.log('[products API] total products:', products.length);
+    console.log('[products API] sample:', products.slice(0, 3).map((p: any) => ({ id: p.id, title: p.title, category: p.category, category_slug: p.category_slug })));
 
     return NextResponse.json(
       { data: products },
