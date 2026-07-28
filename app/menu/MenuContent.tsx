@@ -101,23 +101,27 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
   useEffect(() => {
     fetch('/api/schedules/active')
       .then((r) => r.json())
-      .then((sched) => {
-        const activeType = sched.active_types?.[0] || null;
-        if (!activeType) {
+      .then(async (sched) => {
+        if (!sched.active_types || sched.active_types.length === 0) {
           setActiveCategorySlugs(new Set());
           setCategories([]);
           return;
         }
-        return fetch(`/api/categories?menu_type=${activeType}`)
-          .then((r) => r.json())
-          .then((json) => {
-            if (json.data) {
-              setCategories(json.data.map((c: any) => ({ name: c.name, slug: c.slug, description: c.description || '' })));
-              setActiveCategorySlugs(new Set(json.data.map((c: { slug: string }) => c.slug)));
-            } else {
-              console.error('Categories API error:', json.error);
-            }
+        const results = await Promise.all(
+          sched.active_types.map((type: string) =>
+            fetch(`/api/categories?menu_type=${type}`).then(r => r.json())
+          )
+        );
+        const seen = new Set<string>();
+        const merged = results
+          .flatMap(r => r.data || [])
+          .filter((c: any) => {
+            if (seen.has(c.slug)) return false;
+            seen.add(c.slug);
+            return true;
           });
+        setCategories(merged.map((c: any) => ({ name: c.name, slug: c.slug, description: c.description || '' })));
+        setActiveCategorySlugs(new Set(merged.map((c: any) => c.slug)));
       })
       .catch((err) => {
         console.error('Schedule/categories fetch error:', err);

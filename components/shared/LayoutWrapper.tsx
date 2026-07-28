@@ -13,6 +13,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => { initProducts(); }, [initProducts]);
   
   const noNavbar = pathname?.startsWith('/waiter') || 
+                   pathname?.startsWith('/chef') || 
                    pathname === '/login' || 
                    pathname === '/register' ||
                    pathname?.startsWith('/delivery/checkout') ||

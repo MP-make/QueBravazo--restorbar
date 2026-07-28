@@ -172,4 +172,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Hide scrollbar for horizontal navs */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 

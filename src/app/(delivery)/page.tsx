@@ -8,6 +8,7 @@ import FuegoSection from '@/components/landing/FuegoSection';
 import CommunitySection from '@/components/landing/CommunitySection';
 import ContactBlock from '@/components/landing/ContactBlock';
 import { CartDrawer } from '@/components/shared/CartDrawer';
+import DailyMenuModal from '@/components/shared/DailyMenuModal';
 
 export default function DeliveryPage() {
   const products = useProductStore((s) => s.products);
@@ -37,6 +38,9 @@ export default function DeliveryPage() {
 
       {/* Cart Drawer */}
       <CartDrawer visible={isCartOpen} onClose={() => setIsCartOpen(false)} bebidas={bebidas} />
+
+      {/* Daily Menu Modal */}
+      <DailyMenuModal />
     </div>
   );
 }

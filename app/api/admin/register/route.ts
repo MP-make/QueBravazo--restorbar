@@ -6,11 +6,13 @@ const REGISTER_CODE = '693366';
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password, code } = await req.json();
+    const { name, email, password, code, role } = await req.json();
 
     if (!name || !email || !password || !code) {
       return NextResponse.json({ ok: false, error: 'Todos los campos son obligatorios' }, { status: 400 });
     }
+
+    const userRole = role === 'staff' ? 'staff' : 'admin';
 
     if (code !== REGISTER_CODE) {
       return NextResponse.json({ ok: false, error: 'Código de registro incorrecto' }, { status: 400 });
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
       .insert({
         email: emailLower,
         name: name.trim(),
-        role: 'admin',
+        role: userRole,
         is_active: true,
         password_hash,
       })

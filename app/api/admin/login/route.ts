@@ -6,28 +6,41 @@ export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
     if (!email || !password) {
-      return NextResponse.json({ ok: false, error: 'Email y contraseña requeridos' });
+      return NextResponse.json({ ok: false, error: 'Email/nombre y contraseña requeridos' });
     }
 
+    const query = email.trim();
     const supabase = createAdminClient();
-    const { data, error } = await supabase
+
+    let { data, error } = await supabase
       .from('admin_users')
       .select('id, email, name, role, password_hash')
-      .eq('email', email.toLowerCase())
+      .eq('email', query.toLowerCase())
       .eq('is_active', true)
       .maybeSingle();
 
+    if (!data && !error) {
+      const res = await supabase
+        .from('admin_users')
+        .select('id, email, name, role, password_hash')
+        .eq('name', query)
+        .eq('is_active', true)
+        .maybeSingle();
+      data = res.data;
+      error = res.error;
+    }
+
     if (error) {
-      console.error('Error buscando admin:', error);
+      console.error('Error buscando usuario:', error);
       return NextResponse.json({ ok: false, error: 'Error de base de datos' });
     }
 
     if (!data) {
-      return NextResponse.json({ ok: false, admin_exists: false, error: 'Email no registrado como admin' });
+      return NextResponse.json({ ok: false, admin_exists: false, error: 'Usuario no encontrado' });
     }
 
     if (!data.password_hash) {
-      return NextResponse.json({ ok: false, error: 'Admin sin contraseña configurada. Ejecutá: node scripts/hash-password.mjs tu-contraseña' });
+      return NextResponse.json({ ok: false, error: 'Usuario sin contraseña configurada' });
     }
 
     const valid = await bcrypt.compare(password, data.password_hash);
@@ -38,7 +51,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       admin: true,
-      user: { uid: data.id, email: data.email, name: data.name, role: 'admin' },
+      user: { uid: data.id, email: data.email, name: data.name, role: data.role },
     });
   } catch (err: any) {
     console.error('Error en login:', err);

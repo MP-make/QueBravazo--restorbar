@@ -5,8 +5,10 @@ export async function GET() {
   try {
     const supabase = createAdminClient();
     const now = new Date();
-    const currentDay = now.getDay();
-    const currentTime = now.toTimeString().slice(0, 5);
+    const peruOffset = -300;
+    const peruTime = new Date(now.getTime() + (now.getTimezoneOffset() + peruOffset) * 60000);
+    const currentDay = peruTime.getDay();
+    const currentTime = peruTime.toTimeString().slice(0, 5);
 
     const { data, error } = await supabase
       .from('menu_schedules')

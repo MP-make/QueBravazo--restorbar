@@ -16,6 +16,10 @@ import {
   AlertTriangle,
   Menu,
   X,
+  CalendarCheck,
+  Users,
+  Smartphone,
+  ClipboardList,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -23,7 +27,11 @@ const NAV_ITEMS = [
   { href: "/admin/categories", label: "Categorías", icon: FolderTree },
   { href: "/admin/products", label: "Productos", icon: UtensilsCrossed },
   { href: "/admin/schedules", label: "Horarios", icon: Clock },
+  { href: "/admin/daily-menu", label: "Menú del Día", icon: CalendarCheck },
+  { href: "/admin/staff", label: "Meseros", icon: Users },
   { href: "/admin/media", label: "Media", icon: ImageIcon },
+  { href: "/admin/yape", label: "Yape", icon: Smartphone },
+  { href: "/admin/orders", label: "Pedidos", icon: ClipboardList },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -33,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [verifying, setVerifying] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [verifyError, setVerifyError] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -121,29 +129,30 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
 
   return (
     <div className="min-h-screen bg-stone-950 flex">
-      {/* Mobile overlay when sidebar is open */}
+      {/* Tablet overlay when sidebar is open */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 z-30 hidden md:block lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar: hidden on mobile, drawer on tablet, inline on desktop */}
       <aside className={`
+        max-md:hidden
         flex-col bg-stone-900 border-r border-stone-800 flex-shrink-0
 
-        /* Mobile: fixed drawer with slide animation */
-        fixed inset-y-0 left-0 z-40
-        transition-transform duration-300
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        /* Tablet: fixed drawer with slide animation */
+        md:flex md:flex-col
+        md:fixed md:inset-y-0 md:left-0 md:z-40 md:w-64
+        md:transition-transform md:duration-300 md:ease-out
+        ${sidebarOpen ? 'md:translate-x-0' : 'md:-translate-x-full'}
 
-        /* Tablet+ : inline in flow, no animation */
-        md:relative md:inset-auto md:z-auto
-        md:transition-none md:translate-x-0
-        ${sidebarOpen ? 'md:flex' : 'md:hidden'}
+        /* Desktop: always visible, inline in flow, no animation */
+        lg:relative lg:inset-auto lg:z-auto lg:w-56
+        lg:transition-none lg:translate-x-0 lg:flex
       `}>
-        <div className="h-16 flex items-center gap-3 px-5 border-b border-stone-800 flex-shrink-0">
+        <div className="h-14 lg:h-16 flex items-center gap-3 px-4 lg:px-5 border-b border-stone-800 flex-shrink-0">
           <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
             <Image
               src="/logo_que_bravazo.png"
@@ -205,18 +214,20 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen max-w-full">
         {/* Top bar (with sidebar toggle) */}
-        <header className="h-14 md:h-16 flex items-center gap-3 px-4 border-b border-stone-800 bg-stone-900/50 backdrop-blur-sm flex-shrink-0">
+        <header className="h-14 lg:h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-stone-800 bg-stone-900/50 backdrop-blur-sm flex-shrink-0">
+          {/* Hamburger: tablet only */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 -ml-2 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
+            className="p-2 -ml-1 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors hidden md:flex lg:hidden"
             aria-label={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            <Menu size={20} />
           </button>
-          <div className="flex items-center gap-3 md:hidden">
-            <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/30">
+          {/* Page title: mobile + tablet */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
               <Image
                 src="/logo_que_bravazo.png"
                 alt="Logo"
@@ -225,16 +236,30 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-sm font-bold text-white">Panel Admin</span>
+            <span className="text-xs font-bold text-white truncate max-w-[120px] md:max-w-[200px]">
+              {NAV_ITEMS.find(i => isActiveRoute(i))?.label || "Panel Admin"}
+            </span>
+          </div>
+          {/* Page title: desktop */}
+          <div className="hidden lg:flex items-center gap-2">
+            <span className="text-sm font-bold text-white">
+              {NAV_ITEMS.find(i => isActiveRoute(i))?.label || "Panel Admin"}
+            </span>
           </div>
           <div className="flex-1" />
-          <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold">
-            {user?.name?.charAt(0) || "A"}
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline text-xs text-stone-400">{user?.name}</span>
+            <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold">
+              {user?.name?.charAt(0) || "A"}
+            </div>
+            <button onClick={() => { logout(); router.push("/login"); }} className="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-rose-500/5 transition-colors" title="Cerrar sesión">
+              <LogOut size={16} />
+            </button>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-20 lg:pb-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pb-20 md:pb-6">
           {verifyError && !authorized && (
             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
@@ -255,7 +280,7 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
 
         {/* Bottom nav (mobile only) */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-stone-900 border-t border-stone-800 safe-area-bottom">
-          <div className="flex items-center justify-around h-16">
+          <div className="flex items-center overflow-x-auto no-scrollbar h-16 px-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActiveRoute(item);
@@ -263,12 +288,12 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 h-full transition-colors ${
+                  className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] px-2 h-full transition-colors flex-shrink-0 ${
                     active ? "text-amber-400" : "text-stone-500 hover:text-stone-300"
                   }`}
                 >
-                  <Icon size={20} />
-                  <span className="text-[10px] font-medium leading-tight text-center">{item.label}</span>
+                  <Icon size={18} />
+                  <span className="text-[9px] font-medium leading-tight text-center whitespace-nowrap">{item.label}</span>
                 </Link>
               );
             })}
