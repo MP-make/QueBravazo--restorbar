@@ -53,8 +53,8 @@
 33-->/home/mp/Descargas/QueBravazo--restorbar/android/app/src/main/AndroidManifest.xml:18:13-36
 34            android:screenOrientation="portrait"
 34-->/home/mp/Descargas/QueBravazo--restorbar/android/app/src/main/AndroidManifest.xml:19:13-49
-35            android:windowSoftInputMode="adjustResize" >
-35-->/home/mp/Descargas/QueBravazo--restorbar/android/app/src/main/AndroidManifest.xml:20:13-55
+35            android:windowSoftInputMode="adjustPan" >
+35-->/home/mp/Descargas/QueBravazo--restorbar/android/app/src/main/AndroidManifest.xml:20:13-52
 36            <intent-filter>
 36-->/home/mp/Descargas/QueBravazo--restorbar/android/app/src/main/AndroidManifest.xml:21:13-24:29
 37                <action android:name="android.intent.action.MAIN" />

@@ -60,7 +60,7 @@ export default function LoginPage() {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 max-lg:hidden" />
 
-      <div className="relative z-10 w-full max-w-sm mx-auto px-6 py-8 max-lg:mt-auto max-lg:mb-0 max-lg:pb-12">
+      <div className="relative z-10 w-full max-w-sm mx-auto px-6 py-8">
         <h1 className="text-3xl font-black text-white text-center mb-8">
           Iniciar sesión
         </h1>
