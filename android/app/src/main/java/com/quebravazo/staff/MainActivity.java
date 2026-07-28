@@ -89,6 +89,11 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
+        private boolean isLoginPage(String url) {
+            String path = url.replace(BASE_URL, "");
+            return path.equals("/login") || path.equals("/login/") || path.equals(START_URL);
+        }
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (isAllowed(url)) {
@@ -105,13 +110,16 @@ public class MainActivity extends AppCompatActivity {
             if (!isAllowed(url)) {
                 view.stopLoading();
                 view.loadUrl(START_URL);
+                return;
             }
+            swipeRefresh.setEnabled(!isLoginPage(url));
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             swipeRefresh.setRefreshing(false);
+            swipeRefresh.setEnabled(!isLoginPage(url));
         }
 
         @Override
@@ -124,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 view.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
             }
             swipeRefresh.setRefreshing(false);
+            swipeRefresh.setEnabled(false);
         }
     }
 

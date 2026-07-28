@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Lock, Eye, EyeOff, Loader2, User } from "lucide-react";
 import { useAuthStore } from "@/lib/stores/auth";
 
@@ -51,26 +50,20 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
       <video
         autoPlay
-        loop
         muted
         playsInline
         poster="/login.png"
-        className="absolute inset-0 w-full h-full object-contain"
+        className="absolute inset-0 w-full h-full max-lg:object-scale-down lg:object-cover"
       >
         <source src="/login.mp4" type="video/mp4" />
       </video>
 
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 py-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-500/40 mx-auto mb-4">
-            <Image src="/logo_que_bravazo.png" alt="" width={64} height={64} className="object-cover" />
-          </div>
-          <h1 className="text-2xl font-black">
-            <span className="text-amber-400">¡Qué</span>
-            <span className="text-white"> Bravazo!</span>
-          </h1>
-          <p className="text-stone-300 text-sm mt-2">Inicia sesión en tu cuenta</p>
-        </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 max-lg:hidden" />
+
+      <div className="relative z-10 w-full max-w-sm mx-auto px-6 py-8 max-lg:mt-auto max-lg:mb-0 max-lg:pb-12">
+        <h1 className="text-3xl font-black text-white text-center mb-8">
+          Iniciar sesión
+        </h1>
 
         {error && (
           <div className="mb-4 p-3.5 bg-rose-500/20 border border-rose-500/30 rounded-xl">
@@ -80,11 +73,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-stone-200 mb-1.5">
+            <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-1.5">
               Email o nombre
             </label>
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
               <input
                 id="email"
                 type="text"
@@ -93,17 +86,17 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="correo@ejemplo.com"
-                className="w-full pl-10 pr-4 py-3 bg-black/60 backdrop-blur-sm border border-white/20 rounded-xl text-white text-sm placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500/60 transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-stone-200 mb-1.5">
+            <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-1.5">
               Contraseña
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -112,12 +105,12 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-3 bg-black/60 backdrop-blur-sm border border-white/20 rounded-xl text-white text-sm placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
+                className="w-full pl-10 pr-10 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500/60 transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-200 transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -127,7 +120,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-stone-600 text-black font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 disabled:bg-stone-600 text-black font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25"
           >
             {isLoading ? (
               <>
