@@ -1029,10 +1029,11 @@ export default function AdminMedia() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1.5">URL de miniatura (opcional)</label>
-                <input type="url" value={linkForm.thumbnail_url || ""} onChange={(e) => setLinkForm({ ...linkForm, thumbnail_url: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
-                  placeholder="https://ejemplo.com/miniatura.jpg"
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">Miniatura (opcional)</label>
+                <ImagePicker
+                  value={linkForm.thumbnail_url || ""}
+                  onChange={(url) => setLinkForm({ ...linkForm, thumbnail_url: url })}
+                  compact
                 />
               </div>
               <div className="flex gap-3 pt-2">
