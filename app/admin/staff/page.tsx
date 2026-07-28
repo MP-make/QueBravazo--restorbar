@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/lib/stores/auth";
-import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Trash2, Check, X } from "lucide-react";
+import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Check, X, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 
 interface StaffMember {
   id: string;
@@ -49,6 +49,7 @@ export default function AdminStaff() {
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
   const [savingRole, setSavingRole] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchStaff = useCallback(async () => {
@@ -125,6 +126,31 @@ export default function AdminStaff() {
     } finally {
       setSavingRole(false);
       setEditingRole(null);
+    }
+  }
+
+  async function handleToggleActive(member: StaffMember) {
+    setToggling(member.id);
+    try {
+      const newState = !member.is_active;
+      const res = await fetch(`/api/admin/staff/${member.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: newState }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        alert(json.error || "Error al cambiar estado");
+      } else {
+        const label = newState ? "activado" : "desactivado";
+        setSuccess(`"${member.name}" ${label} exitosamente`);
+        await fetchStaff();
+        setTimeout(() => setSuccess(""), 3000);
+      }
+    } catch {
+      alert("Error de conexión");
+    } finally {
+      setToggling(null);
     }
   }
 
@@ -324,8 +350,11 @@ export default function AdminStaff() {
                     <tr key={s.id} className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-medium">{s.name}</span>
-                          {isSelf && (
+                          <span className={`font-medium ${s.is_active ? "text-white" : "text-stone-500"}`}>{s.name}</span>
+                          {!s.is_active && (
+                            <span className="text-[10px] text-stone-600 bg-stone-800 px-1.5 py-0.5 rounded">inactivo</span>
+                          )}
+                          {isSelf && s.is_active && (
                             <span className="text-[10px] text-stone-500 bg-stone-800 px-1.5 py-0.5 rounded">tú</span>
                           )}
                         </div>
@@ -373,20 +402,41 @@ export default function AdminStaff() {
                       <td className="px-4 py-3 hidden md:table-cell text-stone-500 text-xs">
                         {new Date(s.created_at).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right whitespace-nowrap space-x-1">
                         {!isSelf && (
-                          <button
-                            onClick={() => handleDelete(s)}
-                            disabled={deleting === s.id}
-                            className="p-1.5 text-stone-500 hover:text-rose-400 disabled:opacity-50 transition-colors"
-                            title="Eliminar usuario"
-                          >
-                            {deleting === s.id ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <Trash2 size={14} />
-                            )}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleToggleActive(s)}
+                              disabled={toggling === s.id}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all disabled:opacity-50 ${
+                                s.is_active
+                                  ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                                  : "bg-stone-800 text-stone-500 hover:bg-stone-700"
+                              }`}
+                              title={s.is_active ? "Desactivar usuario" : "Activar usuario"}
+                            >
+                              {toggling === s.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : s.is_active ? (
+                                <ToggleRight size={14} />
+                              ) : (
+                                <ToggleLeft size={14} />
+                              )}
+                              {s.is_active ? "Activo" : "Inactivo"}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(s)}
+                              disabled={deleting === s.id}
+                              className="inline-flex items-center p-1.5 text-stone-500 hover:text-rose-400 disabled:opacity-50 transition-colors rounded-lg"
+                              title="Eliminar usuario"
+                            >
+                              {deleting === s.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Trash2 size={14} />
+                              )}
+                            </button>
+                          </>
                         )}
                       </td>
                     </tr>

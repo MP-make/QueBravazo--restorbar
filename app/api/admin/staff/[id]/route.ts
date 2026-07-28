@@ -7,7 +7,7 @@ const VALID_ROLES = ['admin', 'staff', 'chef'] as const;
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { name, role, current_password, new_password } = await req.json();
+    const { name, role, is_active, current_password, new_password } = await req.json();
     const supabase = createAdminClient();
 
     const updates: Record<string, any> = {};
@@ -18,6 +18,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     if (role && VALID_ROLES.includes(role as any)) {
       updates.role = role;
+    }
+
+    if (typeof is_active === 'boolean') {
+      updates.is_active = is_active;
     }
 
     if (new_password) {
