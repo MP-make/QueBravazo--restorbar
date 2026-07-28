@@ -42,18 +42,20 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
   const isActiveRoute = (href: string) => pathname === href;
 
   return (
-    <div className="min-h-screen bg-black text-white flex">
+    // w-full + overflow-x-hidden a nivel raíz: contiene cualquier desborde
+    // horizontal que pueda producirse más abajo en el árbol.
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-56 bg-stone-900 border-r border-stone-800 flex-shrink-0">
+      <aside className="hidden lg:flex flex-col w-56 flex-shrink-0 bg-stone-900 border-r border-stone-800">
         <div className="h-14 flex items-center gap-3 px-4 border-b border-stone-800">
           <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
             <div className="w-full h-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold">
               {user?.name?.charAt(0) || "M"}
             </div>
           </div>
-          <div className="flex flex-col leading-tight">
+          <div className="flex flex-col leading-tight min-w-0">
             <p className="text-xs font-black text-amber-400">¡Qué Bravazo!</p>
-            <p className="text-[10px] text-stone-500 font-medium">{user?.name}</p>
+            <p className="text-[10px] text-stone-500 font-medium truncate">{user?.name}</p>
           </div>
         </div>
         <nav className="flex-1 py-4 px-3 space-y-1">
@@ -79,7 +81,11 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      {/* min-w-0 es la corrección clave: sin esto, un flex item se niega a
+          encogerse por debajo del ancho intrínseco de su contenido (p.ej. el
+          nav de categorías con overflow-x-auto dentro de la página hija),
+          y termina empujando todo el documento más ancho que el viewport. */}
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Mobile top bar */}
         <header className="lg:hidden flex items-center gap-3 px-3 h-12 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800 flex-shrink-0">
           <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
@@ -92,6 +98,7 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
             <p className="text-[9px] text-stone-500 truncate">{user?.name}</p>
           </div>
         </header>
+
         {children}
       </div>
 

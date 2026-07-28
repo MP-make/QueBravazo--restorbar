@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -51,6 +52,7 @@ export default function WaiterPage() {
       router.replace("/");
       return;
     }
+
     initProducts();
 
     fetch("/api/schedules/active")
@@ -218,20 +220,23 @@ export default function WaiterPage() {
   if (user?.role !== "staff" && user?.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col pb-24 md:pb-0">
+    // w-full max-w-full overflow-x-hidden: evita que este subárbol se
+    // convierta en el "content culprit" que fuerza min-width:auto en el
+    // flex item padre del layout.
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex flex-col pb-24 lg:pb-0">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
-        <div className="flex items-center justify-between px-4 h-14 max-w-7xl mx-auto w-full">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 w-full bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
+        <div className="flex items-center justify-between gap-2 px-4 h-14 max-w-7xl mx-auto w-full">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
               <Image src="/logo_que_bravazo.png" alt="" width={32} height={32} className="object-cover" />
             </div>
-            <div>
-              <p className="text-xs font-black text-amber-400 leading-tight">¡Qué Bravazo!</p>
-              <p className="text-[10px] text-stone-500">Mesero: {user?.name}</p>
+            <div className="min-w-0">
+              <p className="text-xs font-black text-amber-400 leading-tight truncate">¡Qué Bravazo!</p>
+              <p className="text-[10px] text-stone-500 truncate">Mesero: {user?.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {productCount > 0 && (
               <button onClick={() => setShowCart(true)} className="relative p-2 text-stone-400 hover:text-white">
                 <ShoppingBag size={20} />
@@ -245,7 +250,6 @@ export default function WaiterPage() {
             </button>
           </div>
         </div>
-
         {scheduleError && (
           <div className="px-4 pb-3 max-w-7xl mx-auto">
             <p className="text-[11px] text-rose-400">
@@ -257,13 +261,16 @@ export default function WaiterPage() {
 
       {/* Category pills */}
       {visibleCategories.length > 0 && (
-        <nav className="sticky top-[56px] z-30 bg-black/90 backdrop-blur-sm border-b border-stone-800/50 overflow-x-auto">
-          <div className="flex gap-1 px-3 py-2 max-w-7xl mx-auto">
+        <nav className="sticky top-14 z-30 w-full max-w-full bg-black/90 backdrop-blur-sm border-b border-stone-800/50 overflow-x-auto">
+          {/* flex-nowrap + w-max: la fila de pills puede ser más ancha que
+              la pantalla; el scroll debe quedar contenido AQUÍ, dentro del
+              overflow-x-auto del padre, en vez de expandir el documento. */}
+          <div className="flex flex-nowrap gap-1 px-3 py-2 w-max min-w-full max-w-7xl mx-auto">
             {visibleCategories.map((c) => (
               <button
                 key={c.slug}
                 onClick={() => setActiveCategory(c.slug)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                className={`flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
                   activeCategory === c.slug
                     ? "bg-amber-500 text-black"
                     : "bg-stone-800 text-stone-400"
@@ -285,50 +292,55 @@ export default function WaiterPage() {
       )}
 
       {/* Product grid */}
-      <main className="flex-1 overflow-y-auto px-3 max-w-7xl mx-auto w-full">
-        {visibleCategories.length === 0 && !scheduleError && (
-          <div className="text-center py-20">
-            <p className="text-stone-500">Cargando productos...</p>
-          </div>
-        )}
+      <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto px-3">
+        <div className="max-w-7xl mx-auto w-full">
+          {visibleCategories.length === 0 && !scheduleError && (
+            <div className="text-center py-20">
+              <p className="text-stone-500">Cargando productos...</p>
+            </div>
+          )}
 
-        {visibleCategories.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-2 py-3 sm:py-3 px-0.5">
-            {(categoryMap.get(activeCategory) || []).map((product) => (
-              <button
-                key={product.id}
-                onClick={() => addToCart(product)}
-                className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden hover:border-amber-500/30 active:border-amber-500/50 transition-all text-left active:scale-[0.97]"
-              >
-                <div className="relative w-full aspect-square bg-stone-800">
-                  {product.image ? (
-                    <Image
-                      src={product.image}
-                      alt={product.title}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-stone-600 text-xs">Sin imagen</div>
-                  )}
-                </div>
-                <div className="p-2.5 sm:p-2">
-                  <p className="text-xs sm:text-[11px] font-medium leading-tight line-clamp-2">{product.title}</p>
-                  <p className="text-sm sm:text-xs font-black text-amber-500 mt-1.5 sm:mt-1">S/ {product.price.toFixed(2)}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
+          {visibleCategories.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-2 py-3 px-0.5">
+              {(categoryMap.get(activeCategory) || []).map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => addToCart(product)}
+                  className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden hover:border-amber-500/30 active:border-amber-500/50 transition-all text-left active:scale-[0.97] min-w-0"
+                >
+                  {/* overflow-hidden agregado: recorta la imagen si por un
+                      instante se renderiza a su tamaño intrínseco antes de
+                      que el `fill` de next/image tome efecto. */}
+                  <div className="relative w-full aspect-square bg-stone-800 overflow-hidden">
+                    {product.image ? (
+                      <Image
+                        src={product.image}
+                        alt={product.title}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-stone-600 text-xs">Sin imagen</div>
+                    )}
+                  </div>
+                  <div className="p-2.5 sm:p-2">
+                    <p className="text-xs sm:text-[11px] font-medium leading-tight line-clamp-2">{product.title}</p>
+                    <p className="text-sm sm:text-xs font-black text-amber-500 mt-1.5 sm:mt-1">S/ {product.price.toFixed(2)}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Cart overlay */}
       {showCart && (
         <div className="fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCart(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-4 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:border">
+          <div className="absolute bottom-0 left-0 right-0 w-full max-w-full bg-stone-900 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-4 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:border">
             <div className="flex items-center justify-between px-4 py-3.5 sm:p-4 border-b border-stone-800 flex-shrink-0">
               <h3 className="text-sm font-bold">Pedido</h3>
               <div className="flex items-center gap-2">
@@ -411,7 +423,7 @@ export default function WaiterPage() {
                       <p className="text-[10px] text-stone-500">+ S/ 1 envase</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <button onClick={() => updateQuantity(item.product.id, -1)} className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-stone-700 flex items-center justify-center text-stone-300 active:bg-stone-600">
                       <Minus size={14} />
                     </button>
@@ -420,7 +432,7 @@ export default function WaiterPage() {
                       <Plus size={14} />
                     </button>
                   </div>
-                  <button onClick={() => removeFromCart(item.product.id)} className="p-1.5 text-stone-500 hover:text-rose-400 active:text-rose-400">
+                  <button onClick={() => removeFromCart(item.product.id)} className="p-1.5 text-stone-500 hover:text-rose-400 active:text-rose-400 flex-shrink-0">
                     <X size={16} />
                   </button>
                 </div>
@@ -466,7 +478,7 @@ export default function WaiterPage() {
       {productCount > 0 && !showCart && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-28 md:bottom-6 right-4 z-30 bg-amber-500 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/20 flex items-center gap-2 font-bold text-sm hover:bg-amber-400 active:scale-95 transition-all"
+          className="fixed bottom-28 lg:bottom-6 right-4 z-30 bg-amber-500 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/20 flex items-center gap-2 font-bold text-sm hover:bg-amber-400 active:scale-95 transition-all"
         >
           <ShoppingBag size={20} />
           <span>S/ {total.toFixed(2)}</span>
