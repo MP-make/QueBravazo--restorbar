@@ -31,7 +31,7 @@ export default function DeliveryPage() {
       <FuegoSection products={products} />
 
       {/* Muro de la comunidad — Instagram + Reels */}
-      <CommunitySection products={products} />
+      <CommunitySection />
 
       {/* Contacto — info + formulario */}
       <ContactBlock />

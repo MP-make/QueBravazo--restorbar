@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit2, Trash2, X, Loader2, ImageIcon, Video, Film, Upload, Wand2, Save, GripVertical } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Loader2, ImageIcon, Video, Film, Upload, Wand2, Save, GripVertical, Link as LinkIcon, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import ImagePicker from "@/components/shared/ImagePicker";
 
@@ -15,11 +15,22 @@ interface MediaItem {
   is_active: boolean;
 }
 
+interface CommunityLink {
+  url: string;
+  platform: "instagram" | "facebook" | "tiktok" | "other";
+  title: string;
+  thumbnail_url?: string;
+}
+
 interface HomepageContent {
   hero_subtitle: string;
   hero_description: string;
   hero_video_desktop: string;
   hero_video_mobile: string;
+  hero_video_desktop_criollo: string;
+  hero_video_mobile_criollo: string;
+  hero_video_desktop_rapida: string;
+  hero_video_mobile_rapida: string;
   fuego_title: string;
   fuegio_subtitle: string;
   fuego_description: string;
@@ -29,6 +40,9 @@ interface HomepageContent {
   community_handle: string;
   community_title: string;
   community_description: string;
+  community_links: CommunityLink[];
+  community_follow_platform: string;
+  community_follow_url: string;
   contact_handle: string;
   contact_description: string;
   contact_address: string;
@@ -42,6 +56,10 @@ const DEFAULT_CONTENT: HomepageContent = {
   hero_description: "Broaster, hamburguesas artesanales, alitas BBQ y la mejor barra de tragos del barrio.",
   hero_video_desktop: "/HAMBURGUESAS - HORIZONTAL.mp4",
   hero_video_mobile: "/HAMBURGUESAS - VERTICAL.mp4",
+  hero_video_desktop_criollo: "",
+  hero_video_mobile_criollo: "",
+  hero_video_desktop_rapida: "",
+  hero_video_mobile_rapida: "",
   fuego_title: "¿Por qué somos bravazos?",
   fuegio_subtitle: "",
   fuego_description: "Hamburguesas 100% artesanales, alitas BBQ adictivas y la mejor barra de tragos de Pisco. Todo hecho con sazón peruana y el fuelle que solo un verdadero bravazo puede dar.",
@@ -51,6 +69,9 @@ const DEFAULT_CONTENT: HomepageContent = {
   community_handle: "@quebravazorestobar",
   community_title: "El muro de la comunidad",
   community_description: "Mira cómo disfruta nuestra gente y comparte tu momento más bravazo.",
+  community_links: [],
+  community_follow_platform: "instagram",
+  community_follow_url: "",
   contact_handle: "@quebravazorestobar",
   contact_description: "Visítanos en nuestro local o pide por delivery. ¡También puedes escribirnos al WhatsApp!",
   contact_address: "Urb. Los Jardines de San Andrés, Pisco, Ica",
@@ -109,6 +130,9 @@ export default function AdminMedia() {
   const [contentLoading, setContentLoading] = useState(true);
   const [contentSaving, setContentSaving] = useState(false);
   const [contentSaved, setContentSaved] = useState(false);
+  const [linkFormOpen, setLinkFormOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<number | null>(null);
+  const [linkForm, setLinkForm] = useState<CommunityLink>({ url: "", platform: "instagram", title: "" });
 
   const fetchMedia = useCallback(async () => {
     try {
@@ -525,7 +549,7 @@ export default function AdminMedia() {
                   />
                 </div>
                 <div className="border-t border-stone-800 pt-4">
-                  <p className="text-xs text-stone-500 font-medium mb-3">🎥 Video / Imagen de fondo</p>
+                  <p className="text-xs text-stone-500 font-medium mb-3">🎥 Video / Imagen de fondo — Default</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <ImagePicker
                       value={content.hero_video_desktop}
@@ -536,6 +560,42 @@ export default function AdminMedia() {
                       value={content.hero_video_mobile}
                       onChange={(url) => setContent({ ...content, hero_video_mobile: url })}
                       label="Móvil (vertical)"
+                    />
+                  </div>
+                </div>
+                <div className="border-t border-stone-800 pt-4">
+                  <p className="text-xs text-stone-500 font-medium mb-3">🥘 Cuando el menú activo es Criollo</p>
+                  <p className="text-[10px] text-stone-600 mb-2">Si está vacío, se usa el default</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <ImagePicker
+                      value={content.hero_video_desktop_criollo}
+                      onChange={(url) => setContent({ ...content, hero_video_desktop_criollo: url })}
+                      label="Escritorio (criollo)"
+                      compact
+                    />
+                    <ImagePicker
+                      value={content.hero_video_mobile_criollo}
+                      onChange={(url) => setContent({ ...content, hero_video_mobile_criollo: url })}
+                      label="Móvil (criollo)"
+                      compact
+                    />
+                  </div>
+                </div>
+                <div className="border-t border-stone-800 pt-4">
+                  <p className="text-xs text-stone-500 font-medium mb-3">🍔 Cuando el menú activo es Rápida</p>
+                  <p className="text-[10px] text-stone-600 mb-2">Si está vacío, se usa el default</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <ImagePicker
+                      value={content.hero_video_desktop_rapida}
+                      onChange={(url) => setContent({ ...content, hero_video_desktop_rapida: url })}
+                      label="Escritorio (rápida)"
+                      compact
+                    />
+                    <ImagePicker
+                      value={content.hero_video_mobile_rapida}
+                      onChange={(url) => setContent({ ...content, hero_video_mobile_rapida: url })}
+                      label="Móvil (rápida)"
+                      compact
                     />
                   </div>
                 </div>
@@ -642,6 +702,101 @@ export default function AdminMedia() {
                     rows={2}
                     className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm resize-none"
                   />
+                </div>
+
+                {/* Botón de seguimiento */}
+                <div className="border-t border-stone-800 pt-4">
+                  <p className="text-xs text-stone-500 font-medium mb-3">🔗 Botón "Seguir en..."</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-stone-400 mb-1.5">Plataforma</label>
+                      <div className="flex gap-2">
+                        {(["instagram", "facebook", "tiktok"] as const).map((p) => (
+                          <button key={p} type="button" onClick={() => setContent({ ...content, community_follow_platform: p })}
+                            className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all border capitalize ${
+                              content.community_follow_platform === p
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                                : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
+                            }`}
+                          >
+                            {p === "instagram" ? "📸" : p === "facebook" ? "👍" : "🎵"} {p}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-stone-400 mb-1.5">URL de la página</label>
+                      <input type="url" value={content.community_follow_url} onChange={(e) => setContent({ ...content, community_follow_url: e.target.value })}
+                        className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                        placeholder="https://www.instagram.com/quebravazorestobar/"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Community links */}
+                <div className="border-t border-stone-800 pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-stone-500 font-medium">🔗 Enlaces a redes sociales</p>
+                    <button
+                      onClick={() => { setEditingLink(null); setLinkForm({ url: "", platform: "instagram", title: "" }); setLinkFormOpen(true); }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium rounded-lg transition-colors"
+                    >
+                      <Plus size={14} />
+                      Agregar enlace
+                    </button>
+                  </div>
+                  {content.community_links.length === 0 ? (
+                    <p className="text-stone-600 text-xs text-center py-4">No hay enlaces configurados</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {content.community_links.map((link, i) => {
+                        const platformColors: Record<string, string> = {
+                          instagram: "from-purple-600/20 to-pink-600/10 border-purple-500/20",
+                          facebook: "from-blue-600/20 to-blue-800/10 border-blue-500/20",
+                          tiktok: "from-cyan-600/20 to-slate-800/10 border-cyan-500/20",
+                          other: "from-stone-600/20 to-stone-800/10 border-stone-500/20",
+                        };
+                        const platformIcons: Record<string, string> = {
+                          instagram: "📸",
+                          facebook: "👍",
+                          tiktok: "🎵",
+                          other: "🔗",
+                        };
+                        return (
+                          <div key={i} className="flex items-center gap-3 bg-stone-800/50 border border-stone-700 rounded-xl p-3">
+                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${platformColors[link.platform] || platformColors.other} flex items-center justify-center text-sm flex-shrink-0`}>
+                              {platformIcons[link.platform] || platformIcons.other}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white text-xs font-medium truncate">{link.title || link.url}</p>
+                              <p className="text-stone-500 text-[10px] truncate">{link.url}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setEditingLink(i);
+                                setLinkForm({ ...link });
+                                setLinkFormOpen(true);
+                              }}
+                              className="p-1.5 text-stone-500 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+                            >
+                              <Edit2 size={11} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const next = [...content.community_links];
+                                next.splice(i, 1);
+                                setContent({ ...content, community_links: next });
+                              }}
+                              className="p-1.5 text-stone-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -819,6 +974,91 @@ export default function AdminMedia() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* === COMMUNITY LINK FORM MODAL === */}
+      {linkFormOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setLinkFormOpen(false)} />
+          <div className="relative bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-stone-800">
+              <h2 className="text-lg font-bold text-white">{editingLink !== null ? "Editar enlace" : "Agregar enlace"}</h2>
+              <button onClick={() => setLinkFormOpen(false)} className="text-stone-400 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">Plataforma</label>
+                <div className="flex gap-2">
+                  {(["instagram", "facebook", "tiktok", "other"] as const).map((p) => (
+                    <button key={p} type="button" onClick={() => setLinkForm({ ...linkForm, platform: p })}
+                      className={`flex-1 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border capitalize ${
+                        linkForm.platform === p
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                          : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
+                      }`}
+                    >
+                      {p === "instagram" ? "📸" : p === "facebook" ? "👍" : p === "tiktok" ? "🎵" : "🔗"} {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">URL de la publicación *</label>
+                <input type="url" required value={linkForm.url} onChange={(e) => {
+                  const url = e.target.value;
+                  const lower = url.toLowerCase();
+                  let platform = linkForm.platform;
+                  if (lower.includes("instagram.com") || lower.includes("instagr.am")) platform = "instagram";
+                  else if (lower.includes("facebook.com") || lower.includes("fb.com")) platform = "facebook";
+                  else if (lower.includes("tiktok.com")) platform = "tiktok";
+                  setLinkForm({ ...linkForm, url, platform });
+                }}
+                  className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  placeholder="https://www.instagram.com/p/..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">Título (opcional)</label>
+                <input type="text" value={linkForm.title} onChange={(e) => setLinkForm({ ...linkForm, title: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  placeholder="Ej: Noche de hamburguesas 🔥"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">URL de miniatura (opcional)</label>
+                <input type="url" value={linkForm.thumbnail_url || ""} onChange={(e) => setLinkForm({ ...linkForm, thumbnail_url: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  placeholder="https://ejemplo.com/miniatura.jpg"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setLinkFormOpen(false)}
+                  className="flex-1 py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-xl transition-colors text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button type="button" onClick={() => {
+                  if (!linkForm.url.trim()) return;
+                  const next = [...content.community_links];
+                  if (editingLink !== null) {
+                    next[editingLink] = { ...linkForm };
+                  } else {
+                    next.push({ ...linkForm });
+                  }
+                  setContent({ ...content, community_links: next });
+                  setLinkFormOpen(false);
+                  setEditingLink(null);
+                }} disabled={!linkForm.url.trim()}
+                  className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 disabled:bg-stone-700 disabled:text-stone-500 text-black font-semibold rounded-xl transition-colors text-sm"
+                >
+                  {editingLink !== null ? "Guardar cambios" : "Agregar"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

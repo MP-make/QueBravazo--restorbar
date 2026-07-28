@@ -1,26 +1,74 @@
 "use client";
+import { useState, useEffect } from "react";
 import { useHomepageContent } from '@/lib/hooks/useHomepageContent';
 
 function isVideo(url: string) {
   return /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
 }
 
+function pickVideo(
+  activeType: string | null,
+  desktopDefault: string,
+  mobileDefault: string,
+  desktopCriollo: string,
+  mobileCriollo: string,
+  desktopRapida: string,
+  mobileRapida: string,
+): { desktop: string; mobile: string } {
+  if (activeType === "criollo") {
+    return {
+      desktop: desktopCriollo || desktopDefault,
+      mobile: mobileCriollo || mobileDefault,
+    };
+  }
+  if (activeType === "rapida") {
+    return {
+      desktop: desktopRapida || desktopDefault,
+      mobile: mobileRapida || mobileDefault,
+    };
+  }
+  return { desktop: desktopDefault, mobile: mobileDefault };
+}
+
 export default function HeroSection() {
   const content = useHomepageContent();
+  const [activeType, setActiveType] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/schedules/active")
+      .then((r) => r.json())
+      .then((sched) => {
+        const types = sched.active_types || [];
+        if (types.includes("criollo")) setActiveType("criollo");
+        else if (types.includes("rapida")) setActiveType("rapida");
+        else setActiveType(null);
+      })
+      .catch(() => setActiveType(null));
+  }, []);
+
+  const videos = pickVideo(
+    activeType,
+    content.hero_video_desktop,
+    content.hero_video_mobile,
+    content.hero_video_desktop_criollo,
+    content.hero_video_mobile_criollo,
+    content.hero_video_desktop_rapida,
+    content.hero_video_mobile_rapida,
+  );
 
   return (
     <section className="relative w-full min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden">
-      {content.hero_video_desktop && isVideo(content.hero_video_desktop) ? (
+      {videos.desktop && isVideo(videos.desktop) ? (
         <video
           className="absolute inset-0 w-full h-full object-cover hidden md:block"
           autoPlay muted loop playsInline
         >
-          <source src={content.hero_video_desktop} type="video/mp4" />
+          <source src={videos.desktop} type="video/mp4" />
         </video>
-      ) : content.hero_video_desktop ? (
+      ) : videos.desktop ? (
         <img
           className="absolute inset-0 w-full h-full object-cover hidden md:block"
-          src={content.hero_video_desktop}
+          src={videos.desktop}
           alt=""
         />
       ) : (
@@ -31,17 +79,17 @@ export default function HeroSection() {
           <source src="/HAMBURGUESAS - HORIZONTAL.mp4" type="video/mp4" />
         </video>
       )}
-      {content.hero_video_mobile && isVideo(content.hero_video_mobile) ? (
+      {videos.mobile && isVideo(videos.mobile) ? (
         <video
           className="absolute inset-0 w-full h-full object-cover block md:hidden"
           autoPlay muted loop playsInline
         >
-          <source src={content.hero_video_mobile} type="video/mp4" />
+          <source src={videos.mobile} type="video/mp4" />
         </video>
-      ) : content.hero_video_mobile ? (
+      ) : videos.mobile ? (
         <img
           className="absolute inset-0 w-full h-full object-cover block md:hidden"
-          src={content.hero_video_mobile}
+          src={videos.mobile}
           alt=""
         />
       ) : (
@@ -64,7 +112,6 @@ export default function HeroSection() {
         <p className="text-stone-400 text-sm md:text-base max-w-lg mx-auto mb-10 leading-relaxed">
           {content.hero_description}
         </p>
-
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
