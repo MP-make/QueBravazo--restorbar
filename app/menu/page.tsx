@@ -54,6 +54,9 @@ function SplashScreen() {
 export default function MenuPage() {
   const products = useProductStore((s) => s.products);
   const loaded = useProductStore((s) => s.loaded);
+  const refresh = useProductStore((s) => s.refresh);
+
+  useEffect(() => { refresh(); }, [refresh]);
 
   if (!loaded) {
     return <SplashScreen />;

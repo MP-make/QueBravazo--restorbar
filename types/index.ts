@@ -16,6 +16,7 @@ export interface Product {
   featured?: boolean;  // Producto destacado en landing
   isMenuDelDia?: boolean; // Si es parte del menú del día (configurado en Ventify)
   minPrice?: number;   // Precio mínimo permitido para descuentos (desde Ventify)
+  is_active?: boolean; // Si el producto está activo en el panel admin
 }
 
 export interface CartItem extends Product {

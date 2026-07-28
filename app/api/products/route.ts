@@ -11,6 +11,7 @@ export async function GET() {
   }
 
   const productCategoryMap = new Map<string, string | null>();
+  const activeProductIds = new Set<string>();
   try {
     const supabase = createAdminClient();
     console.log('[products API] Fetching mappings from Supabase...');
@@ -26,6 +27,7 @@ export async function GET() {
       const categorySlugMap = new Map((categoriesRes.data || []).map((c: any) => [c.id, c.slug]));
       console.log('[products API] categories loaded:', categorySlugMap.size);
       for (const m of mappingsRes.data || []) {
+        activeProductIds.add(m.ventify_id);
         productCategoryMap.set(m.ventify_id, categorySlugMap.get(m.category_id) || null);
       }
       console.log('[products API] product mappings count:', productCategoryMap.size);
@@ -53,20 +55,23 @@ export async function GET() {
     const json = await response.json();
     const ventifyProducts = json.data || [];
 
-    const products = ventifyProducts.map((item: any) => ({
-      id: item.id,
-      sku: item.sku || item.id,
-      title: item.name,
-      price: item.price,
-      image: item.imageUrl || '/logo-que-bravazo.png',
-      category: item.category || 'Otros',
-      category_slug: productCategoryMap.get(item.id) ?? null,
-      description: item.description || '',
-      stock: item.stock ?? 0,
-      featured: item.isFeatured || false,
-      isMenuDelDia: item.isMenuDelDia || false,
-      minPrice: item.minPrice || item.price * 0.5,
-    }));
+    const products = ventifyProducts
+      .filter((item: any) => activeProductIds.has(item.id))
+      .map((item: any) => ({
+        id: item.id,
+        sku: item.sku || item.id,
+        title: item.name,
+        price: item.price,
+        image: item.imageUrl || '/logo-que-bravazo.png',
+        category: item.category || 'Otros',
+        category_slug: productCategoryMap.get(item.id) ?? null,
+        description: item.description || '',
+        stock: item.stock ?? 0,
+        featured: item.isFeatured || false,
+        isMenuDelDia: item.isMenuDelDia || false,
+        minPrice: item.minPrice || item.price * 0.5,
+        is_active: true,
+      }));
 
     console.log('[products API] total products:', products.length);
     console.log('[products API] sample:', products.slice(0, 3).map((p: any) => ({ id: p.id, title: p.title, category: p.category, category_slug: p.category_slug })));

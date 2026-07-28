@@ -67,6 +67,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
       featured: item.featured || false,
       isMenuDelDia: item.isMenuDelDia || false,
       minPrice: item.minPrice || item.price * 0.5,
+      is_active: item.is_active !== undefined ? item.is_active : true,
     }));
 
   } catch (error) {
