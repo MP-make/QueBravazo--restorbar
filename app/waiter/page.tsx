@@ -218,7 +218,7 @@ export default function WaiterPage() {
   if (user?.role !== "staff" && user?.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col pb-20 md:pb-0">
+    <div className="min-h-screen bg-black text-white flex flex-col pb-24 md:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
         <div className="flex items-center justify-between px-4 h-14 max-w-7xl mx-auto w-full">
@@ -293,12 +293,12 @@ export default function WaiterPage() {
         )}
 
         {visibleCategories.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 py-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-2 py-3 sm:py-3 px-0.5">
             {(categoryMap.get(activeCategory) || []).map((product) => (
               <button
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden hover:border-amber-500/30 transition-all text-left"
+                className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden hover:border-amber-500/30 active:border-amber-500/50 transition-all text-left active:scale-[0.97]"
               >
                 <div className="relative w-full aspect-square bg-stone-800">
                   {product.image ? (
@@ -311,12 +311,12 @@ export default function WaiterPage() {
                       unoptimized
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-stone-600 text-[10px]">Sin imagen</div>
+                    <div className="absolute inset-0 flex items-center justify-center text-stone-600 text-xs">Sin imagen</div>
                   )}
                 </div>
-                <div className="p-2">
-                  <p className="text-xs font-medium leading-tight line-clamp-2">{product.title}</p>
-                  <p className="text-sm font-black text-amber-500 mt-1">S/ {product.price.toFixed(2)}</p>
+                <div className="p-2.5 sm:p-2">
+                  <p className="text-xs sm:text-[11px] font-medium leading-tight line-clamp-2">{product.title}</p>
+                  <p className="text-sm sm:text-xs font-black text-amber-500 mt-1.5 sm:mt-1">S/ {product.price.toFixed(2)}</p>
                 </div>
               </button>
             ))}
@@ -328,19 +328,24 @@ export default function WaiterPage() {
       {showCart && (
         <div className="fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCart(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-800 rounded-t-2xl max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-4 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:border">
-            <div className="flex items-center justify-between p-4 border-b border-stone-800 flex-shrink-0">
+          <div className="absolute bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-4 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:border">
+            <div className="flex items-center justify-between px-4 py-3.5 sm:p-4 border-b border-stone-800 flex-shrink-0">
               <h3 className="text-sm font-bold">Pedido</h3>
-              <button onClick={() => setShowCart(false)} className="p-1 text-stone-400 hover:text-white">
-                <ChevronLeft size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                {productCount > 0 && (
+                  <span className="text-[11px] text-stone-500">{productCount} producto{productCount !== 1 ? "s" : ""}</span>
+                )}
+                <button onClick={() => setShowCart(false)} className="p-1.5 text-stone-400 hover:text-white active:text-white">
+                  <ChevronLeft size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Order type - inside cart */}
             <div className="flex gap-2 px-4 pt-3 pb-2 flex-shrink-0">
               <button
                 onClick={() => setOrderType("mesa")}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-2.5 sm:py-2 rounded-lg text-xs font-bold transition-all active:scale-[0.98] ${
                   orderType === "mesa"
                     ? "bg-amber-500 text-black"
                     : "bg-stone-800 text-stone-400"
@@ -350,7 +355,7 @@ export default function WaiterPage() {
               </button>
               <button
                 onClick={() => setOrderType("llevar")}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-2.5 sm:py-2 rounded-lg text-xs font-bold transition-all active:scale-[0.98] ${
                   orderType === "llevar"
                     ? "bg-amber-500 text-black"
                     : "bg-stone-800 text-stone-400"
@@ -367,14 +372,14 @@ export default function WaiterPage() {
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
                   placeholder="N° de mesa"
-                  className="w-full px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="w-full px-3 py-2.5 sm:py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 />
               </div>
             )}
 
             {orderType === "llevar" && (
               <div className="px-4 pb-2 flex-shrink-0">
-                <p className="text-[11px] text-stone-500">
+                <p className="text-[11px] text-stone-500 leading-relaxed">
                   S/1 por plato adicional, excepto caldos y hamburguesas
                 </p>
               </div>
@@ -386,20 +391,20 @@ export default function WaiterPage() {
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
               {cart.length === 0 && (
                 <p className="text-stone-500 text-sm text-center py-8">Carrito vacío</p>
               )}
               {cart.map((item) => (
-                <div key={item.product.id} className="flex items-center gap-3 bg-stone-800/50 rounded-xl p-3">
-                  <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-stone-800 flex-shrink-0">
+                <div key={item.product.id} className="flex items-center gap-3 bg-stone-800/50 rounded-xl p-3 sm:p-2.5">
+                  <div className="relative w-11 h-11 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-stone-800 flex-shrink-0">
                     {item.product.image && (
-                      <Image src={item.product.image} alt="" fill sizes="40px" className="object-cover" unoptimized />
+                      <Image src={item.product.image} alt="" fill sizes="44px" className="object-cover" unoptimized />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{item.product.title}</p>
-                    <p className="text-[11px] text-amber-500 font-bold">
+                    <p className="text-sm sm:text-xs font-medium truncate">{item.product.title}</p>
+                    <p className="text-xs sm:text-[11px] text-amber-500 font-bold">
                       S/ {(item.product.price * item.quantity).toFixed(2)}
                     </p>
                     {orderType === "llevar" && !isTakeawayExempt(item.product) && (
@@ -407,16 +412,16 @@ export default function WaiterPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => updateQuantity(item.product.id, -1)} className="w-7 h-7 rounded-full bg-stone-700 flex items-center justify-center text-stone-300">
-                      <Minus size={12} />
+                    <button onClick={() => updateQuantity(item.product.id, -1)} className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-stone-700 flex items-center justify-center text-stone-300 active:bg-stone-600">
+                      <Minus size={14} />
                     </button>
-                    <span className="w-6 text-center text-xs font-bold">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.product.id, 1)} className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-black">
-                      <Plus size={12} />
+                    <span className="w-7 sm:w-6 text-center text-sm sm:text-xs font-bold">{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.product.id, 1)} className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-amber-500 flex items-center justify-center text-black active:bg-amber-400">
+                      <Plus size={14} />
                     </button>
                   </div>
-                  <button onClick={() => removeFromCart(item.product.id)} className="p-1 text-stone-500 hover:text-rose-400">
-                    <X size={14} />
+                  <button onClick={() => removeFromCart(item.product.id)} className="p-1.5 text-stone-500 hover:text-rose-400 active:text-rose-400">
+                    <X size={16} />
                   </button>
                 </div>
               ))}
@@ -424,29 +429,29 @@ export default function WaiterPage() {
 
             {/* Summary */}
             {cart.length > 0 && (
-              <div className="border-t border-stone-800 p-4 space-y-2 flex-shrink-0">
-                <div className="flex justify-between text-xs text-stone-400">
+              <div className="border-t border-stone-800 p-4 pb-6 sm:pb-4 space-y-2 flex-shrink-0 bg-stone-900">
+                <div className="flex justify-between text-xs sm:text-[11px] text-stone-400">
                   <span>Subtotal</span>
                   <span>S/ {subtotal.toFixed(2)}</span>
                 </div>
                 {orderType === "llevar" && takeawayCharge > 0 && (
-                  <div className="flex justify-between text-xs text-stone-400">
+                  <div className="flex justify-between text-xs sm:text-[11px] text-stone-400">
                     <span>Envases ({takeawayCharge} × S/1)</span>
                     <span>S/ {takeawayCharge.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm font-bold">
+                <div className="flex justify-between text-sm sm:text-xs font-bold pt-1">
                   <span>Total</span>
                   <span className="text-amber-500">S/ {total.toFixed(2)}</span>
                 </div>
-                <div className="flex gap-2 pt-1">
-                  <button onClick={clearCart} className="flex-1 py-2.5 bg-stone-800 text-stone-400 rounded-xl text-xs font-medium">
+                <div className="flex gap-2 pt-2">
+                  <button onClick={clearCart} className="flex-1 py-3 sm:py-2.5 bg-stone-800 text-stone-400 rounded-xl text-xs font-medium active:bg-stone-700">
                     Limpiar
                   </button>
                   <button
                     onClick={handleSubmitOrder}
                     disabled={submitting || !orderType}
-                    className="flex-1 py-2.5 bg-amber-500 text-black rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 sm:py-2.5 bg-amber-500 text-black rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed active:bg-amber-400"
                   >
                     {submitting ? "Enviando..." : "Confirmar pedido"}
                   </button>
@@ -461,9 +466,9 @@ export default function WaiterPage() {
       {productCount > 0 && !showCart && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-24 md:bottom-6 right-4 z-30 bg-amber-500 text-black px-5 py-3 rounded-full shadow-lg shadow-amber-500/20 flex items-center gap-2 font-bold text-sm"
+          className="fixed bottom-28 md:bottom-6 right-4 z-30 bg-amber-500 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/20 flex items-center gap-2 font-bold text-sm hover:bg-amber-400 active:scale-95 transition-all"
         >
-          <ShoppingBag size={18} />
+          <ShoppingBag size={20} />
           <span>S/ {total.toFixed(2)}</span>
         </button>
       )}

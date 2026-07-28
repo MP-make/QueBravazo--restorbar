@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Staff ¡Qué Bravazo!</string>
+    <style name="Theme.QueBravazoStaff" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#0C0A09</item>
+        <item name="android:navigationBarColor">#0C0A09</item>
+        <item name="android:windowBackground">#000000</item>
+    </style>
+</resources>

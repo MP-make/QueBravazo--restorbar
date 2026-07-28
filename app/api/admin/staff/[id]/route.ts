@@ -2,16 +2,22 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import bcrypt from 'bcryptjs';
 
+const VALID_ROLES = ['admin', 'staff', 'chef'] as const;
+
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { name, current_password, new_password } = await req.json();
+    const { name, role, current_password, new_password } = await req.json();
     const supabase = createAdminClient();
 
     const updates: Record<string, any> = {};
 
     if (name) {
       updates.name = name.trim();
+    }
+
+    if (role && VALID_ROLES.includes(role as any)) {
+      updates.role = role;
     }
 
     if (new_password) {
@@ -53,6 +59,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true, data });
+  } catch (err: any) {
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const supabase = createAdminClient();
+
+    const { error } = await supabase
+      .from('admin_users')
+      .delete()
+      .eq('id', id);
+
+    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }

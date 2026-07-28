@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat } from "lucide-react";
+import { useAuthStore } from "@/lib/stores/auth";
+import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Trash2, Check, X } from "lucide-react";
 
 interface StaffMember {
   id: string;
@@ -11,7 +12,28 @@ interface StaffMember {
   created_at: string;
 }
 
+const ROLE_OPTIONS = ["admin", "staff", "chef"] as const;
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  staff: "Mesero",
+  chef: "Cocinero",
+};
+
+const ROLE_ICONS: Record<string, typeof Shield> = {
+  admin: Shield,
+  staff: ChefHat,
+  chef: ChefHat,
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: "bg-amber-500/10 text-amber-400",
+  staff: "bg-emerald-500/10 text-emerald-400",
+  chef: "bg-sky-500/10 text-sky-400",
+};
+
 export default function AdminStaff() {
+  const { user: currentUser } = useAuthStore();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -23,6 +45,11 @@ export default function AdminStaff() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState<string>("");
+  const [savingRole, setSavingRole] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchStaff = useCallback(async () => {
     try {
@@ -70,6 +97,56 @@ export default function AdminStaff() {
       setError("Error de conexión");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleRoleSave(member: StaffMember) {
+    if (editingValue === member.role) {
+      setEditingRole(null);
+      return;
+    }
+    setSavingRole(true);
+    try {
+      const res = await fetch(`/api/admin/staff/${member.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: editingValue }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        alert(json.error || "Error al actualizar rol");
+      } else {
+        setSuccess(`Rol de "${member.name}" actualizado a ${ROLE_LABELS[editingValue]}`);
+        await fetchStaff();
+        setTimeout(() => setSuccess(""), 3000);
+      }
+    } catch {
+      alert("Error de conexión");
+    } finally {
+      setSavingRole(false);
+      setEditingRole(null);
+    }
+  }
+
+  async function handleDelete(member: StaffMember) {
+    if (!confirm(`¿Eliminar a "${member.name}"? Esta acción no se puede deshacer.`)) return;
+    setDeleting(member.id);
+    try {
+      const res = await fetch(`/api/admin/staff/${member.id}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        alert(json.error || "Error al eliminar");
+      } else {
+        setSuccess(`"${member.name}" eliminado exitosamente`);
+        await fetchStaff();
+        setTimeout(() => setSuccess(""), 3000);
+      }
+    } catch {
+      alert("Error de conexión");
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -235,38 +312,86 @@ export default function AdminStaff() {
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Email</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider">Rol</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Creado</th>
+                  <th className="px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {staff.map((s) => (
-                  <tr key={s.id} className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="text-white font-medium">{s.name}</span>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell text-stone-400">{s.email}</td>
-                    <td className="px-4 py-3">
-                      {s.role === "admin" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400">
-                          <Shield size={12} />
-                          Admin
-                        </span>
-                      ) : s.role === "chef" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-500/10 text-sky-400">
-                          <ChefHat size={12} />
-                          Cocinero
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400">
-                          <ChefHat size={12} />
-                          Mesero
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell text-stone-500 text-xs">
-                      {new Date(s.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                {staff.map((s) => {
+                  const RoleIcon = ROLE_ICONS[s.role] || ChefHat;
+                  const isEditing = editingRole === s.id;
+                  const isSelf = s.id === currentUser?.uid;
+                  return (
+                    <tr key={s.id} className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-medium">{s.name}</span>
+                          {isSelf && (
+                            <span className="text-[10px] text-stone-500 bg-stone-800 px-1.5 py-0.5 rounded">tú</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-stone-400">{s.email}</td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <div className="flex items-center gap-1">
+                            <select
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              className="bg-stone-800 border border-stone-700 rounded-lg text-white text-xs px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                            >
+                              {ROLE_OPTIONS.map((r) => (
+                                <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => handleRoleSave(s)}
+                              disabled={savingRole}
+                              className="p-1 text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+                            >
+                              {savingRole ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                            </button>
+                            <button
+                              onClick={() => setEditingRole(null)}
+                              className="p-1 text-stone-500 hover:text-stone-300"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingRole(s.id);
+                              setEditingValue(s.role);
+                            }}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${ROLE_COLORS[s.role] || ROLE_COLORS.staff} hover:opacity-80 transition-opacity`}
+                          >
+                            <RoleIcon size={12} />
+                            {ROLE_LABELS[s.role] || s.role}
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-stone-500 text-xs">
+                        {new Date(s.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {!isSelf && (
+                          <button
+                            onClick={() => handleDelete(s)}
+                            disabled={deleting === s.id}
+                            className="p-1.5 text-stone-500 hover:text-rose-400 disabled:opacity-50 transition-colors"
+                            title="Eliminar usuario"
+                          >
+                            {deleting === s.id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={14} />
+                            )}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
