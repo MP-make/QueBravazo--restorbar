@@ -5,7 +5,7 @@ import { Plus, Edit2, Trash2, X, Loader2 } from "lucide-react";
 
 interface Schedule {
   id: string;
-  menu_type: "criollo" | "rapida";
+  menu_type: string;
   label: string;
   day_of_week: number | null;
   days_of_week: number[] | null;
@@ -16,13 +16,13 @@ interface Schedule {
 
 const DAYS = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
 
-const MENU_OPTIONS = [
-  { value: "criollo", label: "Menu Criollo", color: "bg-amber-500/10 text-amber-400" },
-  { value: "rapida", label: "Comida Rapida", color: "bg-orange-500/10 text-orange-400" },
-];
+const MENU_STYLES: Record<string, { label: string; color: string }> = {
+  criollo: { label: "Menu Criollo", color: "bg-amber-500/10 text-amber-400" },
+  rapida: { label: "Comida Rapida", color: "bg-orange-500/10 text-orange-400" },
+};
 
 interface ScheduleForm {
-  menu_type: "criollo" | "rapida";
+  menu_type: string;
   label: string;
   days_of_week: number[];
   apply_all_days: boolean;
@@ -133,13 +133,20 @@ export default function AdminSchedules() {
 
   async function handleToggle(sched: Schedule) {
     try {
-      await fetch(`/api/admin/schedules/${sched.id}`, {
+      const res = await fetch(`/api/admin/schedules/${sched.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: !sched.is_active }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert("Error al cambiar estado: " + (err.error || "Error desconocido"));
+        return;
+      }
       await fetchSchedules();
-    } catch {}
+    } catch (e) {
+      alert("Error de red al cambiar estado");
+    }
   }
 
   function getDayLabel(sched: Schedule) {
@@ -150,7 +157,7 @@ export default function AdminSchedules() {
   }
 
   function getMenuStyle(type: string) {
-    return MENU_OPTIONS.find((m) => m.value === type) || MENU_OPTIONS[0];
+    return MENU_STYLES[type] || { label: type.charAt(0).toUpperCase() + type.slice(1), color: "bg-purple-500/10 text-purple-400" };
   }
 
   function formatTime(t: string) {
@@ -260,19 +267,11 @@ export default function AdminSchedules() {
             <form onSubmit={handleSave} className="p-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-stone-300 mb-1.5">Tipo de menu</label>
-                <div className="flex gap-2">
-                  {MENU_OPTIONS.map((opt) => (
-                    <button key={opt.value} type="button" onClick={() => setForm({ ...form, menu_type: opt.value as "criollo" | "rapida" })}
-                      className={`flex-1 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-                        form.menu_type === opt.value
-                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                          : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+                <input type="text" value={form.menu_type} onChange={(e) => setForm({ ...form, menu_type: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  placeholder="Ej: criollo, rapida, tienda"
+                />
+                <p className="text-[11px] text-stone-500 mt-1">Escribe el nombre del tipo de menu (criollo, rapida, tienda, etc.)</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-300 mb-1.5">Etiqueta (opcional)</label>

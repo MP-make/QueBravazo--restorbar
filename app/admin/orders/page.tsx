@@ -28,6 +28,8 @@ interface Order {
   payment_status: string;
   archived: boolean;
   created_at: string;
+  updated_at: string;
+  customer_name?: string;
 }
 
 export default function AdminOrdersPage() {
@@ -147,6 +149,7 @@ export default function AdminOrdersPage() {
               <thead>
                 <tr className="border-b border-stone-800">
                   <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Mesa</th>
+                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Cliente</th>
                   <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Mesero</th>
                   <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium hidden sm:table-cell">Productos</th>
                   <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Monto</th>
@@ -166,6 +169,9 @@ export default function AdminOrdersPage() {
                       <span className="text-white font-medium">
                         {order.order_type === "mesa" ? `Mesa ${order.table_number || "?"}` : "Llevar"}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-stone-400 text-[11px]">
+                      {order.customer_name || <span className="text-stone-600">—</span>}
                     </td>
                     <td className="px-4 py-3 text-stone-400">{order.waiter_name}</td>
                     <td className="px-4 py-3 text-stone-400 hidden sm:table-cell">
@@ -220,7 +226,14 @@ export default function AdminOrdersPage() {
                 <h3 className="text-sm font-bold">
                   {selectedOrder.order_type === "mesa" ? `Mesa ${selectedOrder.table_number || "?"}` : "Para llevar"}
                 </h3>
-                <p className="text-[10px] text-stone-500">{selectedOrder.waiter_name} · {formatDate(selectedOrder.created_at)}</p>
+                <p className="text-[10px] text-stone-500">
+                  {selectedOrder.waiter_name}
+                  {selectedOrder.customer_name ? ` · ${selectedOrder.customer_name}` : ""}
+                  {' · '}{formatDate(selectedOrder.created_at)}
+                </p>
+                {selectedOrder.updated_at && selectedOrder.updated_at !== selectedOrder.created_at && (
+                  <p className="text-[9px] text-stone-600 mt-0.5">Actualizado: {formatDate(selectedOrder.updated_at)}</p>
+                )}
               </div>
               <button onClick={() => setSelectedOrder(null)} className="p-1 text-stone-400 hover:text-white">
                 <X size={20} />

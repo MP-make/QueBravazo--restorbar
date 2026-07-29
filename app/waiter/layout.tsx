@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth";
 import { ShoppingBag, ClipboardList, User, LogOut } from "lucide-react";
@@ -15,7 +16,7 @@ const NAV_ITEMS = [
 export default function WaiterLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoggedIn, isHydrated } = useAuthStore();
+  const { user, isLoggedIn, isHydrated, logout } = useAuthStore();
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -87,16 +88,19 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
           y termina empujando todo el documento más ancho que el viewport. */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Mobile top bar */}
-        <header className="lg:hidden flex items-center gap-3 px-3 h-12 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800 flex-shrink-0">
-          <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
-            <div className="w-full h-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-[10px] font-bold">
-              {user?.name?.charAt(0) || "M"}
+        <header className="lg:hidden flex items-center justify-between gap-2 px-3 h-12 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800 flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
+              <Image src="/logo_que_bravazo.png" alt="" width={28} height={28} className="object-cover" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-black text-amber-400 leading-tight truncate">¡Qué Bravazo!</p>
+              <p className="text-[9px] text-stone-500 truncate">Mesero: {user?.name}</p>
             </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-black text-amber-400 leading-tight">¡Qué Bravazo!</p>
-            <p className="text-[9px] text-stone-500 truncate">{user?.name}</p>
-          </div>
+          <button onClick={() => { logout(); router.push("/login"); }} className="p-1.5 text-stone-400 hover:text-rose-400 flex-shrink-0">
+            <LogOut size={16} />
+          </button>
         </header>
 
         {children}

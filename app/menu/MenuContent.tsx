@@ -129,8 +129,10 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
   }, []);
 
   const filteredProducts = useMemo(
-    () => initialProducts.filter((p) => p.title?.trim() && p.price > 0),
-    [initialProducts],
+    () => activeCategorySlugs
+      ? initialProducts.filter((p) => p.title?.trim() && p.price > 0 && !!p.category_slug && activeCategorySlugs.has(p.category_slug))
+      : initialProducts.filter((p) => p.title?.trim() && p.price > 0),
+    [initialProducts, activeCategorySlugs],
   );
 
   const sectionMap = useMemo(() => {
@@ -164,13 +166,9 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
       return Array.from(secs);
     }
     return categories
-      .filter((c) => {
-        if ((sectionMap.get(c.slug)?.length ?? 0) === 0) return false;
-        if (activeCategorySlugs && !activeCategorySlugs.has(c.slug)) return false;
-        return true;
-      })
+      .filter((c) => (sectionMap.get(c.slug)?.length ?? 0) > 0)
       .map((c) => c.slug);
-  }, [search, searchResults, sectionMap, activeCategorySlugs, categories]);
+  }, [search, searchResults, sectionMap, categories]);
 
   const categorizedSearch = useMemo(() => {
     if (!search) return null;

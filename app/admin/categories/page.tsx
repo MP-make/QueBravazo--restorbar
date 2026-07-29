@@ -14,11 +14,16 @@ interface Category {
   image: string;
 }
 
-const MENU_TYPES = [
+const BASE_MENU_TYPES = [
   { value: "criollo", label: "Criollo", color: "bg-amber-500/10 text-amber-400" },
   { value: "rapida", label: "Rápida", color: "bg-orange-500/10 text-orange-400" },
   { value: "ambos", label: "Ambos", color: "bg-blue-500/10 text-blue-400" },
 ];
+
+function getMenuStyle(value: string, extraTypes: { value: string; label: string; color: string }[] = []) {
+  const all = [...BASE_MENU_TYPES, ...extraTypes];
+  return all.find((m) => m.value === value) || { value, label: value.charAt(0).toUpperCase() + value.slice(1), color: "bg-purple-500/10 text-purple-400" };
+}
 
 const emptyForm = { name: "", slug: "", description: "", menu_type: "ambos", display_order: 0, is_active: true, image: "" };
 
@@ -32,12 +37,26 @@ export default function AdminCategories() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [scheduleTypes, setScheduleTypes] = useState<{ value: string; label: string; color: string }[]>([]);
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/categories");
-      const json = await res.json();
-      setCategories(json.data || []);
+      const [catRes, schedRes] = await Promise.all([
+        fetch("/api/admin/categories"),
+        fetch("/api/admin/schedules"),
+      ]);
+      const catJson = await catRes.json();
+      const schedJson = await schedRes.json();
+      setCategories(catJson.data || []);
+      const seen = new Set<string>();
+      const types: { value: string; label: string; color: string }[] = [];
+      for (const s of schedJson.data || []) {
+        const t = s.menu_type as string;
+        if (seen.has(t) || BASE_MENU_TYPES.some((b) => b.value === t)) continue;
+        seen.add(t);
+        types.push({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1), color: "bg-purple-500/10 text-purple-400" });
+      }
+      setScheduleTypes(types);
     } catch {} finally {
       setLoading(false);
     }
@@ -147,7 +166,7 @@ export default function AdminCategories() {
   }
 
   function getMenuLabel(value: string) {
-    return MENU_TYPES.find((m) => m.value === value) || MENU_TYPES[2];
+    return getMenuStyle(value, scheduleTypes);
   }
 
   if (loading) {
@@ -328,12 +347,12 @@ export default function AdminCategories() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-300 mb-1.5">Tipo de menú</label>
-                <div className="flex gap-2">
-                  {MENU_TYPES.map((mt) => (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {[...BASE_MENU_TYPES, ...scheduleTypes].map((mt) => (
                     <button
                       key={mt.value} type="button"
                       onClick={() => setForm({ ...form, menu_type: mt.value })}
-                      className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
+                      className={`px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
                         form.menu_type === mt.value
                           ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                           : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
@@ -343,6 +362,11 @@ export default function AdminCategories() {
                     </button>
                   ))}
                 </div>
+                <input type="text" value={![...BASE_MENU_TYPES, ...scheduleTypes].some(m => m.value === form.menu_type) ? form.menu_type : ''}
+                  onChange={(e) => setForm({ ...form, menu_type: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  placeholder="O escribe un tipo personalizado"
+                />
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

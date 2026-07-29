@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       .select('id, name, slug, description, display_order, is_active, menu_type')
       .eq('is_active', true);
 
-    if (menuType === 'criollo' || menuType === 'rapida') {
+    if (menuType) {
       query = query.in('menu_type', [menuType, 'ambos']);
     }
 
@@ -21,7 +21,9 @@ export async function GET(req: Request) {
       .order('name', { ascending: true });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Error interno' }, { status: 500 });
   }

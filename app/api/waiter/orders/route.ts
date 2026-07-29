@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { waiter_id, waiter_name, table_number, order_type, items, subtotal, takeaway_charge, total } = body;
+    const { waiter_id, waiter_name, table_number, order_type, items, subtotal, takeaway_charge, total, customer_name } = body;
 
     if (!waiter_id || !waiter_name || !order_type || !items || subtotal === undefined || total === undefined) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         subtotal,
         takeaway_charge: takeaway_charge || 0,
         total,
+        customer_name: customer_name || '',
         status: 'confirmed',
         payment_status: 'pending',
       })

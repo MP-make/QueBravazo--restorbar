@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth";
 import Image from "next/image";
-import { X, CheckCircle, QrCode, DollarSign, Plus, Minus, Save, Clock, CookingPot } from "lucide-react";
+import { X, CheckCircle, QrCode, DollarSign, Plus, Minus, Save, Clock, CookingPot, Pencil } from "lucide-react";
 
 interface OrderItem {
   product_id: string;
@@ -28,6 +29,7 @@ interface WaiterOrder {
   payment_method: string | null;
   payment_status: string;
   created_at: string;
+  customer_name?: string;
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -39,6 +41,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 };
 
 export default function MisPedidosPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [orders, setOrders] = useState<WaiterOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -271,6 +274,11 @@ export default function MisPedidosPage() {
                   </>
                 )}
               </div>
+              {selectedOrder.customer_name && (
+                <p className="text-[11px] text-stone-400">
+                  Cliente: {selectedOrder.customer_name}
+                </p>
+              )}
             </div>
 
             {/* Items */}
@@ -351,11 +359,14 @@ export default function MisPedidosPage() {
                     </div>
                   )}
 
-                  {/* Cancel button (only before served) */}
+                  {/* Edit & Cancel buttons (only before served) */}
                   {selectedOrder.status !== "cancelled" && selectedOrder.status !== "served" && (
                     <div className="flex gap-2">
-                      <button onClick={() => handleEditStatus(selectedOrder.id, "cancelled")} className="w-full py-2 bg-rose-600/20 text-rose-400 rounded-xl text-xs font-medium hover:bg-rose-600/30 transition-colors">
-                        Cancelar pedido
+                      <button onClick={() => router.push(`/waiter?edit=${selectedOrder.id}`)} className="flex-1 py-2 bg-amber-600/20 text-amber-400 rounded-xl text-xs font-medium hover:bg-amber-600/30 transition-colors flex items-center justify-center gap-1">
+                        <Pencil size={14} /> Editar
+                      </button>
+                      <button onClick={() => handleEditStatus(selectedOrder.id, "cancelled")} className="flex-1 py-2 bg-rose-600/20 text-rose-400 rounded-xl text-xs font-medium hover:bg-rose-600/30 transition-colors">
+                        Cancelar
                       </button>
                     </div>
                   )}
@@ -462,6 +473,9 @@ function OrderCard({ order, onClick }: { order: WaiterOrder; onClick: () => void
       </div>
       <div className="flex items-center justify-between">
         <p className="text-xs text-stone-400">
+          {order.customer_name ? (
+            <>{order.customer_name} · </>
+          ) : null}
           {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
         </p>
         <div className="flex items-center gap-2">

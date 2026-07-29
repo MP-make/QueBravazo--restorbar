@@ -34,6 +34,8 @@ export async function GET() {
       active_types: Array.from(activeTypes),
       current_time: currentTime,
       current_day: currentDay,
+    }, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Error interno' }, { status: 500 });

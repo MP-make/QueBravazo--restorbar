@@ -46,11 +46,29 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Load products into search store once
+  // Load products into search store once, filtered by active schedules
   useEffect(() => {
-    fetchProducts().then((products) => {
-      if (products.length > 0) setAllProducts(products);
-    });
+    (async () => {
+      const products = await fetchProducts();
+      if (products.length === 0) return;
+      try {
+        const schedRes = await fetch('/api/schedules/active');
+        const sched = await schedRes.json();
+        if (sched.active_types?.length) {
+          const results = await Promise.all(
+            sched.active_types.map((type: string) =>
+              fetch(`/api/categories?menu_type=${type}`).then(r => r.json())
+            )
+          );
+          const slugs = new Set(results.flatMap(r => r.data || []).map((c: any) => c.slug));
+          setAllProducts(products.filter(p => p.category_slug && slugs.has(p.category_slug)));
+        } else {
+          setAllProducts([]);
+        }
+      } catch {
+        setAllProducts(products);
+      }
+    })();
   }, [setAllProducts]);
 
   // Close modal on outside click

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useAuthStore } from "@/lib/stores/auth";
 import { useProductStore } from "@/lib/stores/products";
@@ -28,6 +28,7 @@ function isTakeawayExempt(product: Product): boolean {
 
 export default function WaiterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoggedIn, logout, isHydrated } = useAuthStore();
   const products = useProductStore((s) => s.products);
   const initProducts = useProductStore((s) => s.init);
@@ -41,6 +42,9 @@ export default function WaiterPage() {
   const [scheduleError, setScheduleError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [editOrderId, setEditOrderId] = useState<string | null>(null);
+  const [loadingEdit, setLoadingEdit] = useState(false);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -82,19 +86,49 @@ export default function WaiterPage() {
       })
       .catch(() => setScheduleError(true));
 
-    fetch("/api/waiter/orders?waiter_id=" + user.uid)
-      .then((r) => r.json())
-      .then((res) => {
-        const orders = res.data || [];
-        const mesaNumbers = orders
-          .filter((o: any) => o.table_number)
-          .map((o: any) => parseInt(o.table_number, 10))
-          .filter((n: number) => !isNaN(n));
-        const max = mesaNumbers.length > 0 ? Math.max(...mesaNumbers) : 0;
-        setTableNumber(String(max + 1));
-      })
-      .catch(() => {});
-  }, [isHydrated, isLoggedIn, user, router, initProducts]);
+    const editId = searchParams?.get("edit") || null;
+    if (editId) {
+      setEditOrderId(editId);
+      setLoadingEdit(true);
+      fetch(`/api/waiter/orders/${editId}`)
+        .then((r) => r.json())
+        .then((res) => {
+          const order = res.data;
+          if (!order) return;
+          const items = (order.items || []).map((item: any) => ({
+            product: {
+              id: item.product_id,
+              title: item.title,
+              price: item.price,
+              image: item.image || "",
+              category: "",
+              stock: 0,
+            },
+            quantity: item.quantity,
+          }));
+          setCart(items);
+          setOrderType(order.order_type);
+          setTableNumber(order.table_number || "");
+          setCustomerName(order.customer_name || "");
+          setTimeout(() => setShowCart(true), 300);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingEdit(false));
+    } else {
+      fetch("/api/waiter/orders?waiter_id=" + user.uid)
+        .then((r) => r.json())
+        .then((res) => {
+          const orders = res.data || [];
+          const mesaNumbers = orders
+            .filter((o: any) => o.table_number)
+            .map((o: any) => parseInt(o.table_number, 10))
+            .filter((n: number) => !isNaN(n));
+          const max = mesaNumbers.length > 0 ? Math.max(...mesaNumbers) : 0;
+          setTableNumber(String(max + 1));
+        })
+        .catch(() => {});
+    }
+  }, [isHydrated, isLoggedIn, user, router, initProducts, searchParams]);
 
   const categoryMap = useMemo(() => {
     const map = new Map<string, Product[]>();
@@ -141,6 +175,8 @@ export default function WaiterPage() {
     setCart([]);
     setOrderType(null);
     setTableNumber("");
+    setCustomerName("");
+    setEditOrderId(null);
   }
 
   function handleLogout() {
@@ -170,20 +206,34 @@ export default function WaiterPage() {
         : 0;
       const total = subtotal + takeawayCharge;
 
-      const res = await fetch("/api/waiter/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          waiter_id: user.uid,
-          waiter_name: user.name,
-          table_number: orderType === "mesa" ? tableNumber.trim() : null,
-          order_type: orderType,
-          items,
-          subtotal,
-          takeaway_charge: takeawayCharge,
-          total,
-        }),
-      });
+      const body = {
+        table_number: orderType === "mesa" ? tableNumber.trim() : null,
+        order_type: orderType,
+        items,
+        subtotal,
+        takeaway_charge: takeawayCharge,
+        total,
+        customer_name: customerName.trim(),
+      };
+
+      let res: Response;
+      if (editOrderId) {
+        res = await fetch(`/api/waiter/orders/${editOrderId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } else {
+        res = await fetch("/api/waiter/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...body,
+            waiter_id: user.uid,
+            waiter_name: user.name,
+          }),
+        });
+      }
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ error: "Error desconocido" }));
@@ -193,6 +243,11 @@ export default function WaiterPage() {
       setSuccess(true);
       clearCart();
       setShowCart(false);
+      setEditOrderId(null);
+      setCustomerName("");
+      if (editOrderId) {
+        router.push("/waiter/mis-pedidos");
+      }
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
       console.error("Error creando pedido:", err);
@@ -224,8 +279,8 @@ export default function WaiterPage() {
     // convierta en el "content culprit" que fuerza min-width:auto en el
     // flex item padre del layout.
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex flex-col pb-24 lg:pb-0">
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
+      {/* Header (hidden on mobile — layout provides branding) */}
+      <header className="sticky top-0 z-40 w-full bg-stone-900/95 backdrop-blur-sm border-b border-stone-800 hidden lg:block">
         <div className="flex items-center justify-between gap-2 px-4 h-14 max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
@@ -342,7 +397,7 @@ export default function WaiterPage() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCart(false)} />
           <div className="absolute bottom-0 left-0 right-0 w-full max-w-full bg-stone-900 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-4 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:border">
             <div className="flex items-center justify-between px-4 py-3.5 sm:p-4 border-b border-stone-800 flex-shrink-0">
-              <h3 className="text-sm font-bold">Pedido</h3>
+              <h3 className="text-sm font-bold">{editOrderId ? "Editando pedido" : "Pedido"}</h3>
               <div className="flex items-center gap-2">
                 {productCount > 0 && (
                   <span className="text-[11px] text-stone-500">{productCount} producto{productCount !== 1 ? "s" : ""}</span>
@@ -352,6 +407,15 @@ export default function WaiterPage() {
                 </button>
               </div>
             </div>
+
+            {/* Edit mode banner */}
+            {editOrderId && (
+              <div className="px-4 pt-3 flex-shrink-0">
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2">
+                  <p className="text-[11px] text-amber-400 text-center font-medium">Editando pedido — agrega o modifica productos</p>
+                </div>
+              </div>
+            )}
 
             {/* Order type - inside cart */}
             <div className="flex gap-2 px-4 pt-3 pb-2 flex-shrink-0">
@@ -402,6 +466,17 @@ export default function WaiterPage() {
                 <p className="text-[11px] text-stone-500">Selecciona Mesa o Para llevar</p>
               </div>
             )}
+
+            {/* Customer name (optional) */}
+            <div className="px-4 pb-2 flex-shrink-0">
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Nombre del cliente (opcional)"
+                className="w-full px-3 py-2.5 sm:py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              />
+            </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
               {cart.length === 0 && (
@@ -465,7 +540,7 @@ export default function WaiterPage() {
                     disabled={submitting || !orderType}
                     className="flex-1 py-3 sm:py-2.5 bg-amber-500 text-black rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed active:bg-amber-400"
                   >
-                    {submitting ? "Enviando..." : "Confirmar pedido"}
+                    {submitting ? "Enviando..." : editOrderId ? "Actualizar pedido" : "Confirmar pedido"}
                   </button>
                 </div>
               </div>

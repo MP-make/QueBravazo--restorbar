@@ -26,6 +26,8 @@ interface WaiterOrder {
   status: string;
   payment_method: string | null;
   created_at: string;
+  updated_at: string;
+  customer_name?: string;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -156,7 +158,10 @@ export default function ChefPage() {
                     <p className="text-sm md:text-base font-bold truncate">
                       {order.order_type === "mesa" ? `Mesa ${order.table_number || "?"}` : "Para llevar"}
                     </p>
-                    <p className="text-[10px] md:text-[11px] text-stone-500 mt-0.5 truncate">{order.waiter_name}</p>
+                    <p className="text-[10px] md:text-[11px] text-stone-500 mt-0.5 truncate">
+                      {order.waiter_name}
+                      {order.customer_name ? <span className="text-stone-600"> · {order.customer_name}</span> : null}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] md:text-[11px] text-stone-500 flex-shrink-0 ml-2">
                     <Clock size={10} />
@@ -217,7 +222,11 @@ export default function ChefPage() {
                   </span>
                 </div>
                 <p className="text-[11px] text-stone-500 mt-0.5 flex items-center gap-2 flex-wrap">
-                  <span>{selectedOrder.waiter_name} — {new Date(selectedOrder.created_at).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span>
+                    {selectedOrder.waiter_name}
+                    {selectedOrder.customer_name ? ` · ${selectedOrder.customer_name}` : ""}
+                    {' — '}{new Date(selectedOrder.created_at).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
                   {selectedOrder.payment_method && (
                     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium capitalize ${
                       selectedOrder.payment_method === "yape" ? "bg-blue-500/10 text-blue-400" : "bg-emerald-500/10 text-emerald-400"

@@ -98,13 +98,25 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
   useEffect(() => {
     fetch('/api/schedules/active')
       .then((r) => r.json())
-      .then((sched) => {
-        const activeType = sched.active_types?.[0] || null;
-        const url = activeType ? `/api/categories?menu_type=${activeType}` : '/api/categories';
-        return fetch(url).then((r) => r.json());
-      })
-      .then((json) => {
-        if (json.data) setActiveCategorySlugs(new Set(json.data.map((c: { slug: string }) => c.slug)));
+      .then(async (sched) => {
+        if (!sched.active_types || sched.active_types.length === 0) {
+          setActiveCategorySlugs(new Set());
+          return;
+        }
+        const results = await Promise.all(
+          sched.active_types.map((type: string) =>
+            fetch(`/api/categories?menu_type=${type}`).then(r => r.json())
+          )
+        );
+        const seen = new Set<string>();
+        const merged = results
+          .flatMap(r => r.data || [])
+          .filter((c: any) => {
+            if (seen.has(c.slug)) return false;
+            seen.add(c.slug);
+            return true;
+          });
+        setActiveCategorySlugs(new Set(merged.map((c: any) => c.slug)));
       })
       .catch(() => {});
   }, []);
@@ -113,12 +125,13 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
     const map = new Map<string, Product[]>();
     for (const s of SECTIONS) map.set(s.id, []);
     for (const p of initialProducts) {
+      if (activeCategorySlugs && p.category_slug && !activeCategorySlugs.has(p.category_slug)) continue;
       const secId = getSectionForCategory(p.category || '');
       const arr = map.get(secId);
       if (arr) arr.push(p);
     }
     return map;
-  }, [initialProducts]);
+  }, [initialProducts, activeCategorySlugs]);
 
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -138,11 +151,9 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
       return Array.from(secs);
     }
     return SECTIONS.filter((s) => {
-      if ((sectionMap.get(s.id)?.length ?? 0) === 0) return false;
-      if (activeCategorySlugs && !activeCategorySlugs.has(s.id)) return false;
-      return true;
+      return (sectionMap.get(s.id)?.length ?? 0) > 0;
     }).map((s) => s.id);
-  }, [search, searchResults, sectionMap, activeCategorySlugs]);
+  }, [search, searchResults, sectionMap]);
 
   const categorizedSearch = useMemo(() => {
     if (!search) return null;
