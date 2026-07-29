@@ -12,13 +12,11 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ProgressBar progressBar;
-    private SwipeRefreshLayout swipeRefresh;
 
     private static final String BASE_URL = "https://que-bravazo.vercel.app";
     private static final String START_URL = BASE_URL + "/login";
@@ -31,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
-        swipeRefresh = findViewById(R.id.swipeRefresh);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -56,8 +53,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        swipeRefresh.setOnRefreshListener(() -> webView.reload());
 
         webView.loadUrl(START_URL);
     }
@@ -89,11 +84,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
-        private boolean isLoginPage(String url) {
-            String path = url.replace(BASE_URL, "");
-            return path.equals("/login") || path.equals("/login/") || path.equals(START_URL);
-        }
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (isAllowed(url)) {
@@ -110,16 +100,12 @@ public class MainActivity extends AppCompatActivity {
             if (!isAllowed(url)) {
                 view.stopLoading();
                 view.loadUrl(START_URL);
-                return;
             }
-            swipeRefresh.setEnabled(!isLoginPage(url));
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            swipeRefresh.setRefreshing(false);
-            swipeRefresh.setEnabled(!isLoginPage(url));
         }
 
         @Override
@@ -131,8 +117,6 @@ public class MainActivity extends AppCompatActivity {
                     + "<button onclick='location.reload()' style='background:#f59e0b;color:#000;border:none;padding:12px 32px;border-radius:12px;font-size:16px;font-weight:bold;margin-top:16px;'>Reintentar</button></div></body></html>";
                 view.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
             }
-            swipeRefresh.setRefreshing(false);
-            swipeRefresh.setEnabled(false);
         }
     }
 
