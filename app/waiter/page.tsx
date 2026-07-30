@@ -19,11 +19,18 @@ interface CartItem {
 }
 
 const EXEMPT_CATEGORIES = ["caldos", "hamburguesa"];
+const NO_KITCHEN_KEYWORDS = ["bebida", "coctel", "cerveza", "gaseosa", "agua", "tragos", "vino"];
 
 function isTakeawayExempt(product: Product): boolean {
   const slug = product.category_slug || "";
   const cat = (product.category || "").toLowerCase();
   return EXEMPT_CATEGORIES.includes(slug) || EXEMPT_CATEGORIES.some((e) => cat.includes(e));
+}
+
+function isNoKitchenProduct(product: Product): boolean {
+  const slug = product.category_slug || "";
+  const cat = (product.category || "").toLowerCase();
+  return NO_KITCHEN_KEYWORDS.some((k) => slug.includes(k) || cat.includes(k));
 }
 
 export default function WaiterPage() {
@@ -198,6 +205,8 @@ export default function WaiterPage() {
         quantity: c.quantity,
         image: c.product.image || "",
         description: c.product.description || "",
+        category_slug: c.product.category_slug || "",
+        skip_kitchen: isNoKitchenProduct(c.product),
       }));
 
       const subtotal = cart.reduce((sum, c) => sum + c.product.price * c.quantity, 0);

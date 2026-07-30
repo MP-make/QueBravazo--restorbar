@@ -12,6 +12,8 @@ interface OrderItem {
   quantity: number;
   image?: string;
   description?: string;
+  category_slug?: string;
+  skip_kitchen?: boolean;
 }
 
 interface WaiterOrder {
@@ -97,11 +99,16 @@ export default function ChefPage() {
     }
   }
 
+  function isNoKitchenOrder(order: WaiterOrder): boolean {
+    return order.items.every((item) => item.skip_kitchen);
+  }
+
   const sections = TABS.map((t) => ({
     key: t.key,
     label: t.label,
     items: orders
       .filter((o) => t.statuses.includes(o.status))
+      .filter((o) => !isNoKitchenOrder(o))
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
   }));
 

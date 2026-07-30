@@ -28,6 +28,10 @@ export async function GET(req: Request) {
   }
 }
 
+function needsKitchen(items: any[]): boolean {
+  return items.some((item) => !item.skip_kitchen);
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -38,6 +42,7 @@ export async function POST(req: Request) {
     }
 
     const supabase = createAdminClient();
+    const status = needsKitchen(items) ? 'confirmed' : 'served';
     const { data, error } = await supabase
       .from('waiter_orders')
       .insert({
@@ -50,7 +55,7 @@ export async function POST(req: Request) {
         takeaway_charge: takeaway_charge || 0,
         total,
         customer_name: customer_name || '',
-        status: 'confirmed',
+        status,
         payment_status: 'pending',
       })
       .select()
