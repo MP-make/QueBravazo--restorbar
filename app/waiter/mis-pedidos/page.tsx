@@ -13,6 +13,16 @@ interface OrderItem {
   quantity: number;
   image?: string;
   description?: string;
+  category?: string;
+  category_slug?: string;
+}
+
+const DRINK_CATEGORIES = ["bebidas", "cocteles", "cerveza", "gaseosa", "agua", "vino", "tragos", "licor"];
+
+function isTakeawayExempt(item: OrderItem): boolean {
+  const slug = item.category_slug || "";
+  const cat = (item.category || "").toLowerCase();
+  return DRINK_CATEGORIES.includes(slug) || DRINK_CATEGORIES.some((e) => cat.includes(e));
 }
 
 interface WaiterOrder {
@@ -134,7 +144,7 @@ export default function MisPedidosPage() {
     try {
       const subtotal = editItems.reduce((s, i) => s + i.price * i.quantity, 0);
       const takeawayCharge = selectedOrder.order_type === "llevar"
-        ? editItems.reduce((s, i) => s + i.quantity, 0)
+        ? editItems.reduce((s, i) => s + (isTakeawayExempt(i) ? 0 : i.quantity), 0)
         : 0;
       const total = subtotal + takeawayCharge;
 

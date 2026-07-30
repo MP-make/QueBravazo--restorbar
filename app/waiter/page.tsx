@@ -18,7 +18,7 @@ interface CartItem {
   quantity: number;
 }
 
-const EXEMPT_CATEGORIES = ["caldos", "hamburguesa"];
+const EXEMPT_CATEGORIES = ["bebidas", "cocteles", "cerveza", "gaseosa", "agua", "vino", "tragos", "licor"];
 const NO_KITCHEN_KEYWORDS = ["bebida", "coctel", "cerveza", "gaseosa", "agua", "tragos", "vino"];
 
 function isTakeawayExempt(product: Product): boolean {
@@ -108,7 +108,8 @@ export default function WaiterPage() {
               title: item.title,
               price: item.price,
               image: item.image || "",
-              category: "",
+              category: item.category || "",
+              category_slug: item.category_slug || "",
               stock: 0,
             },
             quantity: item.quantity,
@@ -200,6 +201,7 @@ export default function WaiterPage() {
         quantity: c.quantity,
         image: c.product.image || "",
         description: c.product.description || "",
+        category: c.product.category || "",
         category_slug: c.product.category_slug || "",
         skip_kitchen: isNoKitchenProduct(c.product),
       }));
@@ -428,7 +430,7 @@ export default function WaiterPage() {
             {orderType === "llevar" && (
               <div className="px-4 pb-2 flex-shrink-0">
                 <p className="text-[11px] text-stone-500 leading-relaxed">
-                  S/1 por plato adicional, excepto caldos y hamburguesas
+                  S/1 por envase por plato de comida (bebidas no incluye)
                 </p>
               </div>
             )}
