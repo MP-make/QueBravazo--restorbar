@@ -1,7 +1,6 @@
 R_DEF: Internal format may change without notice
 local
 id progressBar
-id swipeRefresh
 id webView
 layout activity_main
 mipmap ic_launcher

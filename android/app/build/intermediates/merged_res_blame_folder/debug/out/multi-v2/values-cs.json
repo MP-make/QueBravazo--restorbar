@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.quebravazo.staff.app-mergeDebugResources-19:/values-cs/values-cs.xml",
+            "outputFile": "com.quebravazo.staff.app-mergeDebugResources-18:/values-cs/values-cs.xml",
             "map": [
                 {
                     "source": "/home/mp/.gradle/caches/transforms-3/68b2f9db80fd5fbadc0f11fe19280caa/transformed/appcompat-1.6.1/res/values-cs/values-cs.xml",

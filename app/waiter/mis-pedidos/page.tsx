@@ -160,7 +160,7 @@ export default function MisPedidosPage() {
   }
 
   const pendingOrders = orders.filter((o) => o.payment_status === "pending" && o.status !== "cancelled");
-  const paidOrders = orders.filter((o) => o.payment_status === "paid" || o.status === "cancelled");
+  const paidOrders = orders.filter((o) => o.payment_status === "paid");
 
   function formatDate(dateStr: string) {
     const d = new Date(dateStr);

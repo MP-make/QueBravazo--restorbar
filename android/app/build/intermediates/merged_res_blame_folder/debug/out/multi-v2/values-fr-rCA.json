@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.quebravazo.staff.app-mergeDebugResources-19:/values-fr-rCA/values-fr-rCA.xml",
+            "outputFile": "com.quebravazo.staff.app-mergeDebugResources-18:/values-fr-rCA/values-fr-rCA.xml",
             "map": [
                 {
                     "source": "/home/mp/.gradle/caches/transforms-3/69031d9de34e6ae4e80492f7a424b6d1/transformed/core-1.9.0/res/values-fr-rCA/values-fr-rCA.xml",

@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
 
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
