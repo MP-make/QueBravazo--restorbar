@@ -218,16 +218,7 @@ export default function MenuContent({ initialProducts }: MenuContentProps) {
     return () => observer.disconnect();
   }, [visibleSections]);
 
-  useEffect(() => {
-    if (categories.length > 0 && filteredProducts.length > 0) {
-      console.log('DEBUG categories:', categories.map((c) => c.slug));
-      console.log('DEBUG activeCategorySlugs:', activeCategorySlugs ? [...activeCategorySlugs] : null);
-      console.log('DEBUG sectionMap sizes:', [...sectionMap.entries()].map(([k, v]) => `${k}:${v.length}`));
-      console.log('DEBUG visibleSections:', visibleSections);
-      console.log('DEBUG products sample:', JSON.stringify(filteredProducts.slice(0, 5).map((p) => ({ id: p.id, title: p.title, category: p.category, category_slug: p.category_slug })), null, 2));
-      console.log('DEBUG broster products:', JSON.stringify(filteredProducts.filter((p) => p.category === 'Frituras' || p.category_slug === 'broster' || p.category_slug === 'alitas-broster').map((p) => ({ title: p.title, category: p.category, category_slug: p.category_slug })), null, 2));
-    }
-  }, [categories, filteredProducts, sectionMap, visibleSections, activeCategorySlugs]);
+
 
   return (
     <div className="min-h-screen relative pt-0 md:pt-20">

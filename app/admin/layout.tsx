@@ -140,7 +140,7 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
       {/* Sidebar: hidden on mobile, drawer on tablet, inline on desktop */}
       <aside className={`
         max-md:hidden
-        flex-col bg-stone-900 border-r border-stone-800 flex-shrink-0
+        flex-col bg-stone-900/95 border-r border-stone-800/80 flex-shrink-0
 
         /* Tablet: fixed drawer with slide animation */
         md:flex md:flex-col
@@ -151,9 +151,10 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
         /* Desktop: always visible, inline in flow, no animation */
         lg:relative lg:inset-auto lg:z-auto lg:w-56
         lg:transition-none lg:translate-x-0 lg:flex
+        lg:shadow-[4px_0_20px_rgba(0,0,0,0.3)]
       `}>
-        <div className="h-14 lg:h-16 flex items-center gap-3 px-4 lg:px-5 border-b border-stone-800 flex-shrink-0">
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
+        <div className="h-14 lg:h-16 flex items-center gap-3 px-4 lg:px-5 border-b border-stone-800/80 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30 flex-shrink-0 shadow-lg shadow-amber-500/10">
             <Image
               src="/logo_que_bravazo.png"
               alt="Logo"
@@ -163,15 +164,14 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
             />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold">
-              <span className="text-amber-400">¡Qué</span>
-              <span className="text-white"> Bravazo!</span>
+            <span className="text-sm font-bold tracking-tight">
+              <span className="text-gradient-amber">¡Qué Bravazo!</span>
             </span>
-            <span className="text-[10px] text-stone-500 font-medium tracking-wider uppercase">Panel Admin</span>
+            <span className="text-[10px] text-stone-500 font-semibold tracking-[0.15em] uppercase">Panel Admin</span>
           </div>
         </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActiveRoute(item);
@@ -179,23 +179,24 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
-                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                    : "text-stone-400 hover:text-stone-200 hover:bg-stone-800 border border-transparent"
+                    ? "bg-gradient-to-r from-amber-500/10 to-transparent text-amber-400 border border-amber-500/15 shadow-sm"
+                    : "text-stone-400 hover:text-stone-200 hover:bg-stone-800/80 border border-transparent"
                 }`}
               >
-                <Icon size={18} />
+                {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-amber-500 rounded-full shadow-sm shadow-amber-500/50" />}
+                <Icon size={18} className={active ? "text-amber-500" : "text-stone-500 group-hover:text-stone-300 transition-colors"} />
                 <span>{item.label}</span>
-                {active && <ChevronRight size={14} className="ml-auto text-amber-500" />}
+                {active && <ChevronRight size={14} className="ml-auto text-amber-500/60" />}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-stone-800 flex-shrink-0">
+        <div className="p-4 border-t border-stone-800/80 flex-shrink-0">
           <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold uppercase">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black text-xs font-bold uppercase shadow-lg shadow-amber-500/20">
               {user?.name?.charAt(0) || "A"}
             </div>
             <div className="flex-1 min-w-0">
@@ -205,9 +206,9 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
           </div>
           <button
             onClick={() => { logout(); router.push("/"); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-stone-400 hover:text-rose-400 hover:bg-rose-500/5 rounded-xl text-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-2 w-full text-stone-400 hover:text-rose-400 hover:bg-rose-500/5 rounded-xl text-sm transition-all duration-200 group"
           >
-            <LogOut size={16} />
+            <LogOut size={16} className="group-hover:scale-110 transition-transform" />
             <span>Cerrar sesión</span>
           </button>
         </div>
@@ -216,7 +217,7 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen max-w-full">
         {/* Top bar (with sidebar toggle) */}
-        <header className="h-14 lg:h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-stone-800 bg-stone-900/50 backdrop-blur-sm flex-shrink-0">
+        <header className="h-14 lg:h-16 flex items-center gap-3 px-3 lg:px-6 border-b border-stone-800/80 bg-stone-950/80 backdrop-blur-md flex-shrink-0 shadow-sm">
           {/* Hamburger: tablet only */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -227,7 +228,7 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
           </button>
           {/* Page title: mobile + tablet */}
           <div className="flex items-center gap-2 lg:hidden">
-            <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
+            <div className="w-7 h-7 rounded-lg overflow-hidden border border-amber-500/30 flex-shrink-0">
               <Image
                 src="/logo_que_bravazo.png"
                 alt="Logo"
@@ -242,17 +243,17 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
           </div>
           {/* Page title: desktop */}
           <div className="hidden lg:flex items-center gap-2">
-            <span className="text-sm font-bold text-white">
+            <span className="text-sm font-bold text-white tracking-tight">
               {NAV_ITEMS.find(i => isActiveRoute(i))?.label || "Panel Admin"}
             </span>
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-xs text-stone-400">{user?.name}</span>
-            <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold">
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-xs text-stone-400 font-medium">{user?.name}</span>
+            <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black text-xs font-bold shadow-lg shadow-amber-500/20">
               {user?.name?.charAt(0) || "A"}
             </div>
-            <button onClick={() => { logout(); router.push("/login"); }} className="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-rose-500/5 transition-colors" title="Cerrar sesión">
+            <button onClick={() => { logout(); router.push("/login"); }} className="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200" title="Cerrar sesión">
               <LogOut size={16} />
             </button>
           </div>

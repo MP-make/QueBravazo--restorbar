@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useAuthStore } from "@/lib/stores/auth";
 import { useProductStore } from "@/lib/stores/products";
 import { Product } from "@/types";
-import { Plus, Minus, X, ShoppingBag, LogOut, ChevronLeft, CheckCircle } from "lucide-react";
+import { Plus, Minus, X, ShoppingBag, ChevronLeft, CheckCircle } from "lucide-react";
 
 interface CategoryInfo {
   name: string;
@@ -186,11 +186,6 @@ export default function WaiterPage() {
     setEditOrderId(null);
   }
 
-  function handleLogout() {
-    logout();
-    router.push("/login");
-  }
-
   async function handleSubmitOrder() {
     if (!orderType) return;
     if (cart.length === 0) return;
@@ -288,56 +283,26 @@ export default function WaiterPage() {
     // convierta en el "content culprit" que fuerza min-width:auto en el
     // flex item padre del layout.
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex flex-col pb-24 lg:pb-0">
-      {/* Header (hidden on mobile — layout provides branding) */}
-      <header className="sticky top-0 z-40 w-full bg-stone-900/95 backdrop-blur-sm border-b border-stone-800 hidden lg:block">
-        <div className="flex items-center justify-between gap-2 px-4 h-14 max-w-7xl mx-auto w-full">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
-              <Image src="/logo_que_bravazo.png" alt="" width={32} height={32} className="object-cover" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-black text-amber-400 leading-tight truncate">¡Qué Bravazo!</p>
-              <p className="text-[10px] text-stone-500 truncate">Mesero: {user?.name}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {productCount > 0 && (
-              <button onClick={() => setShowCart(true)} className="relative p-2 text-stone-400 hover:text-white">
-                <ShoppingBag size={20} />
-                <span className="absolute -top-0.5 -right-0.5 bg-amber-500 text-black text-[9px] font-black min-w-[16px] h-4 rounded-full flex items-center justify-center border border-black">
-                  {productCount}
-                </span>
-              </button>
-            )}
-            <button onClick={handleLogout} className="p-2 text-stone-400 hover:text-rose-400">
-              <LogOut size={18} />
-            </button>
-          </div>
+      {scheduleError && (
+        <div className="px-3 pt-2">
+          <p className="text-[11px] text-rose-400">
+            No hay horarios activos. Contacta al administrador.
+          </p>
         </div>
-        {scheduleError && (
-          <div className="px-4 pb-3 max-w-7xl mx-auto">
-            <p className="text-[11px] text-rose-400">
-              No hay horarios activos. Contacta al administrador.
-            </p>
-          </div>
-        )}
-      </header>
+      )}
 
       {/* Category pills */}
       {visibleCategories.length > 0 && (
-        <nav className="sticky top-14 z-30 w-full max-w-full bg-black/90 backdrop-blur-sm border-b border-stone-800/50 overflow-x-auto">
-          {/* flex-nowrap + w-max: la fila de pills puede ser más ancha que
-              la pantalla; el scroll debe quedar contenido AQUÍ, dentro del
-              overflow-x-auto del padre, en vez de expandir el documento. */}
-          <div className="flex flex-nowrap gap-1 px-3 py-2 w-max min-w-full max-w-7xl mx-auto">
+        <nav className="w-full max-w-full bg-black/90 backdrop-blur-sm border-b border-stone-800/50 overflow-x-auto">
+          <div className="flex flex-nowrap gap-1.5 px-3 py-2 w-max min-w-full max-w-7xl mx-auto lg:justify-center">
             {visibleCategories.map((c) => (
               <button
                 key={c.slug}
                 onClick={() => setActiveCategory(c.slug)}
-                className={`flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                className={`flex-shrink-0 whitespace-nowrap px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                   activeCategory === c.slug
-                    ? "bg-amber-500 text-black"
-                    : "bg-stone-800 text-stone-400"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg shadow-amber-500/25 scale-[1.05]"
+                    : "bg-stone-800/80 text-stone-400 hover:text-stone-200 hover:bg-stone-700/80 border border-stone-700/50"
                 }`}
               >
                 {c.name}
@@ -365,16 +330,13 @@ export default function WaiterPage() {
           )}
 
           {visibleCategories.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-2 py-3 px-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 py-2 px-0.5">
               {(categoryMap.get(activeCategory) || []).map((product) => (
                 <button
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden hover:border-amber-500/30 active:border-amber-500/50 transition-all text-left active:scale-[0.97] min-w-0"
+                  className="group bg-stone-900/80 border border-stone-800/80 rounded-xl overflow-hidden hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 active:border-amber-500/50 transition-all duration-200 text-left active:scale-[0.97] min-w-0"
                 >
-                  {/* overflow-hidden agregado: recorta la imagen si por un
-                      instante se renderiza a su tamaño intrínseco antes de
-                      que el `fill` de next/image tome efecto. */}
                   <div className="relative w-full aspect-square bg-stone-800 overflow-hidden">
                     {product.image ? (
                       <Image
@@ -382,15 +344,16 @@ export default function WaiterPage() {
                         alt={product.title}
                         fill
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
-                        className="object-cover"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                         unoptimized
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-stone-600 text-xs">Sin imagen</div>
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   </div>
                   <div className="p-2.5 sm:p-2">
-                    <p className="text-xs sm:text-[11px] font-medium leading-tight line-clamp-2">{product.title}</p>
+                    <p className="text-xs sm:text-[11px] font-medium leading-tight line-clamp-2 text-stone-200 group-hover:text-white transition-colors">{product.title}</p>
                     <p className="text-sm sm:text-xs font-black text-amber-500 mt-1.5 sm:mt-1">S/ {product.price.toFixed(2)}</p>
                   </div>
                 </button>
@@ -404,14 +367,14 @@ export default function WaiterPage() {
       {showCart && (
         <div className="fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCart(false)} />
-          <div className="absolute bottom-0 left-0 right-0 w-full max-w-full bg-stone-900 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-4 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:border">
-            <div className="flex items-center justify-between px-4 py-3.5 sm:p-4 border-b border-stone-800 flex-shrink-0">
+          <div className="absolute bottom-0 left-0 right-0 w-full max-w-full bg-stone-900/95 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-6 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:shadow-amber-500/5 lg:border lg:border-stone-700/50 lg:backdrop-blur-md">
+            <div className="flex items-center justify-between px-4 py-3.5 sm:p-4 border-b border-stone-800/80 flex-shrink-0">
               <h3 className="text-sm font-bold">{editOrderId ? "Editando pedido" : "Pedido"}</h3>
               <div className="flex items-center gap-2">
                 {productCount > 0 && (
                   <span className="text-[11px] text-stone-500">{productCount} producto{productCount !== 1 ? "s" : ""}</span>
                 )}
-                <button onClick={() => setShowCart(false)} className="p-1.5 text-stone-400 hover:text-white active:text-white">
+                <button onClick={() => setShowCart(false)} className="p-1.5 text-stone-400 hover:text-white active:text-white transition-colors">
                   <ChevronLeft size={20} />
                 </button>
               </div>
@@ -562,7 +525,7 @@ export default function WaiterPage() {
       {productCount > 0 && !showCart && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-28 lg:bottom-6 right-4 z-30 bg-amber-500 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/20 flex items-center gap-2 font-bold text-sm hover:bg-amber-400 active:scale-95 transition-all"
+          className="fixed bottom-28 lg:bottom-6 right-4 z-30 bg-gradient-to-r from-amber-500 to-amber-400 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/30 flex items-center gap-2 font-bold text-sm hover:from-amber-400 hover:to-amber-300 hover:shadow-xl hover:shadow-amber-500/40 active:scale-95 transition-all duration-200"
         >
           <ShoppingBag size={20} />
           <span>S/ {total.toFixed(2)}</span>

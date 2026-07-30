@@ -43,20 +43,20 @@ export default function ChefLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="min-h-screen bg-black text-white flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-56 bg-stone-900 border-r border-stone-800 flex-shrink-0">
-        <div className="h-14 flex items-center gap-3 px-4 border-b border-stone-800">
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-500/30 flex-shrink-0">
-            <div className="w-full h-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold">
+      <aside className="hidden lg:flex flex-col w-56 bg-stone-900/95 border-r border-stone-800/80 flex-shrink-0 shadow-[4px_0_20px_rgba(0,0,0,0.3)]">
+        <div className="h-14 flex items-center gap-3 px-4 border-b border-stone-800/80">
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30 flex-shrink-0 shadow-lg shadow-amber-500/10">
+            <div className="w-full h-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black text-xs font-bold">
               QB
             </div>
           </div>
           <div>
-            <p className="text-xs font-black text-amber-400 leading-tight">Cocina</p>
-            <p className="text-[9px] text-stone-500 font-medium tracking-wider uppercase">Panel</p>
+            <p className="text-xs font-black text-gradient-amber leading-tight">Cocina</p>
+            <p className="text-[9px] text-stone-500 font-semibold tracking-[0.15em] uppercase">Panel</p>
           </div>
         </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-1">
+        <nav className="flex-1 py-4 px-3 space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActiveRoute(item.href);
@@ -64,22 +64,23 @@ export default function ChefLayout({ children }: { children: React.ReactNode }) 
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
-                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                    : "text-stone-400 hover:text-stone-200 hover:bg-stone-800 border border-transparent"
+                    ? "bg-gradient-to-r from-amber-500/10 to-transparent text-amber-400 border border-amber-500/15 shadow-sm"
+                    : "text-stone-400 hover:text-stone-200 hover:bg-stone-800/80 border border-transparent"
                 }`}
               >
-                <Icon size={18} />
+                {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-amber-500 rounded-full shadow-sm shadow-amber-500/50" />}
+                <Icon size={18} className={active ? "text-amber-500" : "text-stone-500 group-hover:text-stone-300 transition-colors"} />
                 <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-stone-800 flex-shrink-0 hidden lg:block">
+        <div className="p-4 border-t border-stone-800/80 flex-shrink-0 hidden lg:block">
           <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold uppercase">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black text-xs font-bold uppercase shadow-lg shadow-amber-500/20">
               {user?.name?.charAt(0) || "C"}
             </div>
             <div className="flex-1 min-w-0">
@@ -89,9 +90,9 @@ export default function ChefLayout({ children }: { children: React.ReactNode }) 
           </div>
           <button
             onClick={() => { logout(); router.push("/login"); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-stone-400 hover:text-rose-400 hover:bg-rose-500/5 rounded-xl text-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-2 w-full text-stone-400 hover:text-rose-400 hover:bg-rose-500/5 rounded-xl text-sm transition-all duration-200 group"
           >
-            <LogOut size={16} />
+            <LogOut size={16} className="group-hover:scale-110 transition-transform" />
             Cerrar sesión
           </button>
         </div>

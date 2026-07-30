@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { rateLimit } from '@/lib/rate-limit';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed, remaining } = rateLimit(`login:${ip}`, 5, 60000);
+    if (!allowed) {
+      return NextResponse.json(
+        { ok: false, error: `Demasiados intentos. Intenta en ${Math.ceil(remaining / 1000)} segundos` },
+        { status: 429 }
+      );
+    }
+
     const { email, password } = await req.json();
     if (!email || !password) {
       return NextResponse.json({ ok: false, error: 'Email/nombre y contraseña requeridos' });
@@ -48,11 +58,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'Contraseña incorrecta' });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ok: true,
       admin: true,
       user: { uid: data.id, email: data.email, name: data.name, role: data.role },
     });
+
+    response.cookies.set('session', crypto.randomUUID(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24, // 24 horas
+    });
+
+    return response;
   } catch (err: any) {
     console.error('Error en login:', err);
     return NextResponse.json({ ok: false, error: err.message });

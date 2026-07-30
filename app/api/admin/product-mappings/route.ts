@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 
 const VENTIFY_API_URL = process.env.NEXT_PUBLIC_VENTIFY_API_URL;
 const VENTIFY_ACCOUNT_ID = process.env.NEXT_PUBLIC_VENTIFY_ACCOUNT_ID;
-const VENTIFY_API_KEY = process.env.NEXT_PUBLIC_VENTIFY_API_KEY;
+const VENTIFY_API_KEY = process.env.VENTIFY_API_KEY;
 
 export async function GET() {
   const supabase = createAdminClient();

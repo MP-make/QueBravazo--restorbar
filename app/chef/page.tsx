@@ -117,20 +117,20 @@ export default function ChefPage() {
   return (
     <div className="max-w-7xl mx-auto p-4">
       {/* Section tabs */}
-      <div className="flex gap-1.5 mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
+      <div className="flex gap-2 mb-5 -mx-4 px-4 overflow-x-auto no-scrollbar">
         {sections.map((s) => (
           <button
             key={s.key}
             onClick={() => { setActiveTab(s.key); setSelectedItem(null); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-[11px] md:text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
               activeTab === s.key
-                ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20"
-                : "bg-stone-800 text-stone-400"
+                ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg shadow-amber-500/25 scale-[1.02]"
+                : "bg-stone-800/80 text-stone-400 hover:text-stone-200 hover:bg-stone-700/80 border border-stone-700/50"
             }`}
           >
             {s.label}
             {s.items.length > 0 && (
-              <span className={`px-1.5 py-0.5 rounded-full text-[9px] md:text-[10px] ${
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                 activeTab === s.key ? "bg-black/20 text-black" : "bg-stone-700 text-stone-400"
               }`}>
                 {s.items.length}
@@ -151,44 +151,58 @@ export default function ChefPage() {
           <p className="text-stone-500 text-sm">No hay pedidos {activeSection.label.toLowerCase()}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {activeSection.items.map((order) => {
             const totalQty = order.items.reduce((s, i) => s + i.quantity, 0);
+            const statusColor =
+              order.status === "pending" || order.status === "confirmed" ? "border-l-blue-500" :
+              order.status === "preparing" ? "border-l-amber-500" :
+              "border-l-green-500";
+            const time = timeSince(order.created_at);
+            const isUrgent = time.includes("h") && parseInt(time) > 1;
             return (
               <button
                 key={order.id}
                 onClick={() => { setSelectedOrder(order); setSelectedItem(null); }}
-                className="bg-stone-900 border border-stone-800 rounded-xl p-3 md:p-4 text-left active:scale-[0.98] hover:border-amber-500/30 transition-all text-white"
+                className={`group relative bg-stone-900/80 border border-stone-800/80 rounded-xl p-3 md:p-4 text-left active:scale-[0.98] hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-200 text-white overflow-hidden ${statusColor} border-l-2`}
               >
+                {/* Status top indicator */}
+                <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
+                  <div className={`absolute -top-3 -right-3 w-8 h-8 rotate-45 ${
+                    order.status === "pending" || order.status === "confirmed" ? "bg-blue-500/10" :
+                    order.status === "preparing" ? "bg-amber-500/10" : "bg-green-500/10"
+                  }`} />
+                </div>
+
                 <div className="flex items-start justify-between mb-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm md:text-base font-bold truncate">
+                    <p className="text-sm md:text-base font-bold truncate tracking-tight">
                       {order.order_type === "mesa" ? `Mesa ${order.table_number || "?"}` : "Para llevar"}
                     </p>
-                    <p className="text-[10px] md:text-[11px] text-stone-500 mt-0.5 truncate">
+                    <p className="text-[10px] md:text-[11px] text-stone-500 mt-0.5 truncate flex items-center gap-1">
                       {order.waiter_name}
-                      {order.customer_name ? <span className="text-stone-600"> · {order.customer_name}</span> : null}
+                      {order.customer_name ? <><span className="text-stone-700">·</span> <span className="text-stone-400">{order.customer_name}</span></> : null}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] md:text-[11px] text-stone-500 flex-shrink-0 ml-2">
-                    <Clock size={10} />
-                    {timeSince(order.created_at)}
+                  <div className={`flex items-center gap-1 text-[10px] md:text-[11px] flex-shrink-0 ml-2 ${isUrgent ? "text-rose-400 font-semibold" : "text-stone-500"}`}>
+                    <Clock size={10} className={isUrgent ? "text-rose-400" : ""} />
+                    {time}
                   </div>
                 </div>
 
                 <div className="space-y-0.5 mb-2 md:mb-3">
                   {order.items.slice(0, 4).map((item, i) => (
                     <div key={i} className="flex items-center gap-2 text-[11px] md:text-xs">
-                      <span className="text-amber-400 font-bold w-4 flex-shrink-0">{item.quantity}×</span>
+                      <span className="text-amber-400 font-bold w-5 flex-shrink-0 text-right tabular-nums">{item.quantity}×</span>
                       <span className="text-stone-300 truncate">{item.title}</span>
                     </div>
                   ))}
                   {order.items.length > 4 && (
-                    <p className="text-[10px] md:text-[11px] text-stone-500">+{order.items.length - 4} más</p>
+                    <p className="text-[10px] md:text-[11px] text-stone-500 pl-7">+{order.items.length - 4} más</p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-stone-800">
+                <div className="flex items-center justify-between pt-2 border-t border-stone-800/60">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] md:text-xs text-stone-500">{totalQty} {totalQty === 1 ? "plato" : "platos"}</span>
                     {order.payment_method && (
@@ -200,7 +214,7 @@ export default function ChefPage() {
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] md:text-xs font-bold text-amber-500">S/ {order.total.toFixed(2)}</span>
+                  <span className="text-[11px] md:text-xs font-bold text-amber-500 tabular-nums">S/ {order.total.toFixed(2)}</span>
                 </div>
               </button>
             );

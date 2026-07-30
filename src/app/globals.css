@@ -17,9 +17,9 @@
   --text-muted: #a1a1aa;     /* Gris suave para descripciones */
   --text-dim: #71717a;       /* Gris oscuro para textos secundarios */
   
-  /* Fuentes de Marca (Elegantes y con carácter) */
-  --font-serif: 'Playfair Display', Georgia, serif; /* Para títulos con impacto */
-  --font-sans: 'Montserrat', var(--font-geist-sans), sans-serif; /* Para botones, navegación y textos */
+  /* Fuentes de Marca (Modernas y legibles) */
+  --font-heading: 'Plus Jakarta Sans', sans-serif; /* Títulos bold y modernos */
+  --font-sans: 'Inter', sans-serif; /* Textos limpios y profesionales */
 }
 
 /* ========== Estilos Globales de la Página ========== */
@@ -33,11 +33,12 @@ body {
   overflow-x: hidden;
 }
 
-/* ========== Tipografía de Títulos y Header (Look Editorial) ========== */
+/* ========== Tipografía de Títulos y Header (Look Moderno) ========== */
 h1, h2, h3, .font-title {
-  font-family: var(--font-serif);
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-weight: 800;
   letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 /* Estilo para textos como "MENÚ" o "TUS FAVORITOS EN UN SOLO LUGAR" */
@@ -179,6 +180,76 @@ html {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ========== Mejoras Visuales Desktop ========== */
+
+/* Scrollbar personalizada (oscura, delgada, con color de acento) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0c0c0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2e;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3e;
+}
+
+/* Mejor renderizado de texto en desktop */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Color de selección con el tono del brand */
+::selection {
+  background: rgba(234, 88, 12, 0.3);
+  color: #fff;
+}
+
+/* Focus visible ring consistente */
+*:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.5);
+  outline-offset: 2px;
+}
+
+/* Efecto glass utilitario */
+.glass-panel {
+  background: rgba(18, 18, 20, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(31, 31, 35, 0.8);
+}
+
+/* Sombra cálida para tarjetas destacadas */
+.shadow-amber-glow {
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.06), 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradiente de texto con el color del brand */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animación de brillo en hover para cards */
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(234, 88, 12, 0.15); }
+  50% { border-color: rgba(234, 88, 12, 0.35); }
+}
+
+.card-hover-glow:hover {
+  animation: borderGlow 2s ease-in-out infinite;
+  box-shadow: 0 0 24px rgba(234, 88, 12, 0.06);
 }
 
 

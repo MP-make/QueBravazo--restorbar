@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { rateLimit } from '@/lib/rate-limit';
 import bcrypt from 'bcryptjs';
 
-const REGISTER_CODE = '693366';
+const REGISTER_CODE = process.env.ADMIN_REGISTER_CODE || '693366';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed } = rateLimit(`register:${ip}`, 3, 60000);
+    if (!allowed) {
+      return NextResponse.json(
+        { ok: false, error: 'Demasiados intentos. Intenta de nuevo en 1 minuto' },
+        { status: 429 }
+      );
+    }
+
     const { name, email, password, code, role } = await req.json();
 
     if (!name || !email || !password || !code) {

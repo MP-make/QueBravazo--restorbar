@@ -105,10 +105,12 @@ export default function AdminOrdersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-lg font-bold text-white">Pedidos pagados</h1>
-          <p className="text-sm text-stone-400">{filtered.length} pedidos · S/ {totalPaid.toFixed(2)} total</p>
+          <h1 className="text-xl font-bold text-white tracking-tight">Pedidos pagados</h1>
+          <p className="text-sm text-stone-400 mt-1">
+            <span className="font-medium text-stone-300">{filtered.length}</span> pedidos · <span className="font-medium text-amber-500">S/ {totalPaid.toFixed(2)}</span> total
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 sm:flex-none">
@@ -118,13 +120,13 @@ export default function AdminOrdersPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar..."
-              className="w-full sm:w-48 pl-8 pr-3 py-2 bg-stone-800 border border-stone-700 rounded-xl text-white text-xs placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              className="w-full sm:w-52 pl-8 pr-3 py-2 bg-stone-800/80 border border-stone-700/80 rounded-xl text-white text-xs placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 transition-all"
             />
           </div>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-              showArchived ? "bg-stone-700 text-white" : "bg-stone-800 text-stone-400"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
+              showArchived ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-stone-800/80 text-stone-400 border border-stone-700/50 hover:text-stone-200 hover:bg-stone-700/80"
             }`}
           >
             <Archive size={14} />
@@ -143,66 +145,68 @@ export default function AdminOrdersPage() {
           <p className="text-stone-500 text-sm">No hay pedidos {showArchived ? "archivados" : "pagados"}</p>
         </div>
       ) : (
-        <div className="bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden">
+        <div className="bg-stone-900/80 border border-stone-800/80 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-800">
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Mesa</th>
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Cliente</th>
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Mesero</th>
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium hidden sm:table-cell">Productos</th>
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Monto</th>
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium hidden md:table-cell">Pago</th>
-                  <th className="text-left px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium hidden md:table-cell">Fecha</th>
-                  <th className="text-right px-4 py-3 text-[10px] text-stone-500 uppercase tracking-wider font-medium">Acción</th>
+                <tr className="border-b border-stone-800/80 bg-stone-950/50">
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Mesa</th>
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Cliente</th>
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Mesero</th>
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold hidden sm:table-cell">Productos</th>
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Monto</th>
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold hidden md:table-cell">Pago</th>
+                  <th className="text-left px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold hidden md:table-cell">Fecha</th>
+                  <th className="text-right px-4 py-3.5 text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors cursor-pointer"
+                    className="border-b border-stone-800/30 hover:bg-stone-800/30 transition-colors duration-150 cursor-pointer group"
                     onClick={() => setSelectedOrder(order)}
                   >
-                    <td className="px-4 py-3">
-                      <span className="text-white font-medium">
-                        {order.order_type === "mesa" ? `Mesa ${order.table_number || "?"}` : "Llevar"}
-                      </span>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-medium">{order.order_type === "mesa" ? `Mesa ${order.table_number || "?"}` : "Llevar"}</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-stone-400 text-[11px]">
-                      {order.customer_name || <span className="text-stone-600">—</span>}
+                    <td className="px-4 py-3.5">
+                      <span className="text-stone-400 text-[11px]">{order.customer_name || <span className="text-stone-600">—</span>}</span>
                     </td>
-                    <td className="px-4 py-3 text-stone-400">{order.waiter_name}</td>
-                    <td className="px-4 py-3 text-stone-400 hidden sm:table-cell">
-                      {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
+                    <td className="px-4 py-3.5 text-stone-400 text-[11px]">{order.waiter_name}</td>
+                    <td className="px-4 py-3.5 text-stone-400 text-[11px] hidden sm:table-cell">
+                      <span className="tabular-nums">{order.items.length}</span> {order.items.length === 1 ? "producto" : "productos"}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="text-amber-500 font-bold">S/ {order.total.toFixed(2)}</span>
+                    <td className="px-4 py-3.5">
+                      <span className="text-amber-500 font-bold tabular-nums">S/ {order.total.toFixed(2)}</span>
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
+                    <td className="px-4 py-3.5 hidden md:table-cell">
                       {order.payment_method && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium capitalize bg-emerald-500/10 text-emerald-400">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium capitalize ${
+                          order.payment_method === "yape" ? "bg-blue-500/10 text-blue-400" : "bg-emerald-500/10 text-emerald-400"
+                        }`}>
                           {order.payment_method === "yape" ? <QrCode size={10} /> : <DollarSign size={10} />}
                           {order.payment_method}
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-stone-500 text-[11px] hidden md:table-cell">
+                    <td className="px-4 py-3.5 text-stone-500 text-[11px] hidden md:table-cell tabular-nums">
                       {new Date(order.created_at).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" })}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3.5 text-right">
                       {order.archived ? (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleUnarchive(order.id); }}
-                          className="text-[11px] text-stone-500 hover:text-white underline"
+                          className="text-[11px] text-stone-500 hover:text-white underline transition-colors"
                         >
                           Restaurar
                         </button>
                       ) : (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleArchive(order.id); }}
-                          className="text-[11px] text-rose-400 hover:text-rose-300 underline"
+                          className="opacity-0 group-hover:opacity-100 text-[11px] text-rose-400 hover:text-rose-300 underline transition-all duration-200"
                         >
                           Archivar
                         </button>

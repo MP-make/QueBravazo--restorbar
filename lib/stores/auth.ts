@@ -56,13 +56,16 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false 
       }),
       
-      // Logout
-      logout: () => set({ 
-        user: null, 
-        firebaseUser: null, 
-        isLoggedIn: false,
-        isLoading: false 
-      }),
+      // Logout - limpia estado local y cookie del servidor
+      logout: () => {
+        fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
+        set({ 
+          user: null, 
+          firebaseUser: null, 
+          isLoggedIn: false,
+          isLoading: false 
+        });
+      },
       
       // Helpers para verificar rol
       isStaff: () => {

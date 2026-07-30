@@ -184,7 +184,7 @@ export default function MisPedidosPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-4">
+      <main className="max-w-3xl mx-auto px-4 py-3">
         {loading ? (
           <div className="text-center py-20">
             <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -197,8 +197,8 @@ export default function MisPedidosPage() {
         ) : (
           <>
             {pendingOrders.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">
+              <section className="mb-6">
+                <h2 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2.5">
                   Pendientes de pago ({pendingOrders.length})
                 </h2>
                 <div className="space-y-2">
@@ -457,36 +457,43 @@ export default function MisPedidosPage() {
 
 function OrderCard({ order, onClick }: { order: WaiterOrder; onClick: () => void }) {
   const statusInfo = STATUS_MAP[order.status] || { label: order.status, color: "text-stone-400" };
+  const borderColor = order.status === "served" ? "border-green-500/30" : order.status === "cancelled" ? "border-rose-500/20" : "border-stone-800";
+  const bgColor = order.status === "served" ? "bg-green-500/5" : order.status === "cancelled" ? "bg-rose-500/5" : "bg-stone-900";
 
   return (
-    <button onClick={onClick} className={`w-full bg-stone-900 border rounded-xl p-3 text-left hover:border-stone-700 transition-all ${
-      order.status === "served" ? "border-green-500/40 bg-green-500/5" : "border-stone-800"
-    }`}>
+    <button onClick={onClick} className={`w-full ${bgColor} ${borderColor} border rounded-xl p-3 text-left hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-200 group`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <p className="text-xs font-bold">
+          <p className="text-xs font-bold tracking-tight">
             {order.order_type === "mesa" ? `Mesa ${order.table_number || "?"}` : "Para llevar"}
           </p>
-          <span className={`text-[10px] font-medium ${statusInfo.color}`}>{statusInfo.label}</span>
+          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${statusInfo.color} bg-current/5`}>{statusInfo.label}</span>
         </div>
-        <p className="text-[10px] text-stone-500">
+        <p className="text-[10px] text-stone-500 tabular-nums">
           {new Date(order.created_at).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
         </p>
       </div>
       <div className="flex items-center justify-between">
         <p className="text-xs text-stone-400">
           {order.customer_name ? (
-            <>{order.customer_name} · </>
+            <><span className="text-stone-300">{order.customer_name}</span> · </>
           ) : null}
           {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
         </p>
         <div className="flex items-center gap-2">
-          {order.payment_method && <span className="text-[10px] capitalize text-stone-500">{order.payment_method}</span>}
-          <p className="text-sm font-black text-amber-500">S/ {order.total.toFixed(2)}</p>
+          {order.payment_method && (
+            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium capitalize ${
+              order.payment_method === "yape" ? "bg-blue-500/10 text-blue-400" : "bg-emerald-500/10 text-emerald-400"
+            }`}>
+              {order.payment_method === "yape" ? <QrCode size={9} /> : <DollarSign size={9} />}
+              {order.payment_method}
+            </span>
+          )}
+          <p className="text-sm font-black text-amber-500 tabular-nums">S/ {order.total.toFixed(2)}</p>
         </div>
       </div>
       {order.payment_status === "paid" && (
-        <div className="flex items-center gap-1 mt-1.5 text-green-500 text-[10px]">
+        <div className="flex items-center gap-1 mt-2 pt-2 border-t border-green-500/10 text-green-400 text-[10px] font-medium">
           <CheckCircle size={10} /> Pagado
         </div>
       )}

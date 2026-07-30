@@ -30,26 +30,17 @@ const STAFF_EMAILS = [
 ];
 
 /**
- * Determina el rol del usuario basado en su email
- * En producción, esto consultaría a Ventify para verificar si es staff
+ * Determina el rol del usuario basado en su email.
+ * Solo usuarios explícitamente listados como staff obtienen rol staff.
+ * El rol admin se obtiene exclusivamente via Supabase (ruta /api/admin/login).
  */
 export const determineUserRole = async (email: string): Promise<'client' | 'staff' | 'admin'> => {
   const emailLower = email.toLowerCase();
-  
-  // Verificar si es admin
-  if (emailLower.includes('admin')) {
-    return 'admin';
-  }
-  
-  // Verificar si es staff (mesero, cajero, etc.)
-  if (STAFF_EMAILS.includes(emailLower) || 
-      emailLower.includes('@ventify') ||
-      emailLower.includes('mesero') ||
-      emailLower.includes('cajero')) {
+
+  if (STAFF_EMAILS.includes(emailLower)) {
     return 'staff';
   }
-  
-  // Por defecto es cliente
+
   return 'client';
 };
 
@@ -143,10 +134,8 @@ const syncClientWithVentify = async (userData: UserData): Promise<void> => {
       }),
     });
     
-    if (response.ok) {
-      console.log('✅ Cliente sincronizado con Ventify');
-    } else {
-      console.warn('⚠️ No se pudo sincronizar con Ventify');
+    if (!response.ok) {
+      console.warn('No se pudo sincronizar con Ventify');
     }
   } catch (error) {
     console.warn('⚠️ Error al sincronizar con Ventify:', error);

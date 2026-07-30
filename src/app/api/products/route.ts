@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 const API_URL = process.env.NEXT_PUBLIC_VENTIFY_API_URL;
 const ACCOUNT_ID = process.env.NEXT_PUBLIC_VENTIFY_ACCOUNT_ID;
-const API_KEY = process.env.NEXT_PUBLIC_VENTIFY_API_KEY;
+const API_KEY = process.env.VENTIFY_API_KEY;
 
 export async function GET() {
   if (!API_URL || !ACCOUNT_ID || !API_KEY) {
