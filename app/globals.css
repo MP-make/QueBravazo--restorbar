@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* ========== Paleta de Colores y Tipografías de ¡Qué Bravazo! ========== */
+:root {
+  /* Colores Principales (Esencia Restobar: Fuego y Noche) */
+  --primary: #ea580c;        /* Naranja fuego vibrante */
+  --primary-light: #f97316;
+  --primary-dark: #c2410c;
+  
+  /* Fondos (Oscuro Urbano / Textura de pizarra) */
+  --bg-dark: #09090b;        /* Negro asfalto profundo */
+  --bg-panel: #121214;       /* Gris oscuro para el sidebar panel */
+  --border-dark: #1f1f23;     /* Bordes sutiles oscuros */
+  
+  /* Textos */
+  --text-light: #f4f4f5;     /* Blanco brillante */
+  --text-muted: #a1a1aa;     /* Gris suave para descripciones */
+  --text-dim: #71717a;       /* Gris oscuro para textos secundarios */
+  
+  /* Fuentes de Marca (Modernas y legibles) */
+  --font-heading: 'Plus Jakarta Sans', sans-serif; /* Títulos bold y modernos */
+  --font-sans: 'Inter', sans-serif; /* Textos limpios y profesionales */
+}
+
+/* ========== Estilos Globales de la Página ========== */
+body {
+  background-color: var(--bg-dark);
+  background-image: radial-gradient(circle at 1px 1px, rgba(234, 88, 12, 0.015) 1px, transparent 0);
+  background-size: 40px 40px; /* Sutil patrón de fondo urbano */
+  color: var(--text-light);
+  font-family: var(--font-sans), Arial, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========== Tipografía de Títulos y Header (Look Moderno) ========== */
+h1, h2, h3, .font-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+/* Estilo para textos como "MENÚ" o "TUS FAVORITOS EN UN SOLO LUGAR" */
+.text-tracking-elegant {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 800;
+}
+
+/* ========== Mejoras de Layout y Contenedores (La Leña Look) ========== */
+
+/* Contenedor seguro para centrar los platos en desktop (Evita que se estiren a los lados) */
+.menu-container-safe {
+  width: 100%;
+  max-width: 1340px; /* Ancho elegante para pantallas grandes */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;  /* px-6: Colchón de seguridad lateral */
+  padding-right: 1.5rem;
+}
+
+/* Efecto Sticky Transparente para la Barra de Categorías (Píldoras) */
+.sticky-categories {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: rgba(9, 9, 11, 0.85); /* Fondo oscuro translúcido */
+  backdrop-filter: blur(12px);             /* Desenfoque de fondo premium */
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-dark);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+/* ========== Estilos del Sidebar Panel Lateral (Menú Hamburguesa) ========== */
+
+/* Fondo oscuro detrás del panel */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* El Cajón Lateral Deslizable */
+.sidebar-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 340px; /* Ancho fijo en desktop */
+  height: 100vh;
+  z-index: 51;
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-dark);
+  display: flex;
+  flex-direction: col;
+  justify-content: space-between; /* Divide arriba, medio (vacio) y abajo (contacto) */
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  animation: slideFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========== Tarjetas de Productos Premium ========== */
+.card-bravazo {
+  background-color: #161619;
+  border: 1px solid var(--border-dark);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-bravazo:hover {
+  transform: translateY(-6px);
+  border-color: rgba(234, 88, 12, 0.3);
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.08);
+}
+
+/* ========== Animaciones Personalizadas ========== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Shimmer para carga progresiva de imágenes */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #161619 25%, #222226 50%, #161619 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Scale-up animation para productos al cargar */
+@keyframes scaleUp {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Spinner circular */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Smooth scroll general */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for horizontal navs */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ========== Mejoras Visuales Desktop ========== */
+
+/* Scrollbar personalizada (oscura, delgada, con color de acento) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0c0c0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2e;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3e;
+}
+
+/* Mejor renderizado de texto en desktop */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Color de selección con el tono del brand */
+::selection {
+  background: rgba(234, 88, 12, 0.3);
+  color: #fff;
+}
+
+/* Focus visible ring consistente */
+*:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.5);
+  outline-offset: 2px;
+}
+
+/* Efecto glass utilitario */
+.glass-panel {
+  background: rgba(18, 18, 20, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(31, 31, 35, 0.8);
+}
+
+/* Sombra cálida para tarjetas destacadas */
+.shadow-amber-glow {
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.06), 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradiente de texto con el color del brand */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animación de brillo en hover para cards */
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(234, 88, 12, 0.15); }
+  50% { border-color: rgba(234, 88, 12, 0.35); }
+}
+
+.card-hover-glow:hover {
+  animation: borderGlow 2s ease-in-out infinite;
+  box-shadow: 0 0 24px rgba(234, 88, 12, 0.06);
+}
