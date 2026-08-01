@@ -16,10 +16,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, email, password, code, role } = await req.json();
+    const { name, email, dni, password, code, role } = await req.json();
 
     if (!name || !email || !password || !code) {
       return NextResponse.json({ ok: false, error: 'Todos los campos son obligatorios' }, { status: 400 });
+    }
+
+    const dniTrim = (dni || '').trim();
+    if (dniTrim && !/^\d{8}$/.test(dniTrim)) {
+      return NextResponse.json({ ok: false, error: 'El DNI debe tener 8 dígitos' }, { status: 400 });
     }
 
     const userRole = role === 'staff' ? 'staff' : 'admin';
@@ -45,6 +50,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'Este email ya está registrado como admin' }, { status: 400 });
     }
 
+    if (dniTrim) {
+      const { data: existingDni } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('dni', dniTrim)
+        .maybeSingle();
+
+      if (existingDni) {
+        return NextResponse.json({ ok: false, error: 'Este DNI ya está registrado' }, { status: 400 });
+      }
+    }
+
     const password_hash = await bcrypt.hash(password, 10);
 
     const { data, error } = await supabase
@@ -52,11 +69,12 @@ export async function POST(req: Request) {
       .insert({
         email: emailLower,
         name: name.trim(),
+        dni: dniTrim || null,
         role: userRole,
         is_active: true,
         password_hash,
       })
-      .select('id, email, name, role')
+      .select('id, email, name, dni, role')
       .single();
 
     if (error) {
@@ -65,7 +83,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      user: { uid: data.id, email: data.email, name: data.name, role: data.role },
+      user: { uid: data.id, email: data.email, name: data.name, dni: data.dni, role: data.role },
     });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });

@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/lib/stores/auth";
-import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Check, X, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Check, X, Trash2, ToggleLeft, ToggleRight, CreditCard } from "lucide-react";
 
 interface StaffMember {
   id: string;
   email: string;
   name: string;
+  dni?: string | null;
   role: string;
   is_active: boolean;
   created_at: string;
@@ -40,6 +41,7 @@ export default function AdminStaff() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [dni, setDni] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"staff" | "admin" | "chef">("staff");
   const [saving, setSaving] = useState(false);
@@ -49,6 +51,9 @@ export default function AdminStaff() {
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
   const [savingRole, setSavingRole] = useState(false);
+  const [editingDni, setEditingDni] = useState<string | null>(null);
+  const [dniValue, setDniValue] = useState<string>("");
+  const [savingDni, setSavingDni] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -76,6 +81,7 @@ export default function AdminStaff() {
         body: JSON.stringify({
           name: name.trim(),
           email: email.toLowerCase().trim(),
+          dni: dni.trim(),
           password,
           role,
         }),
@@ -88,6 +94,7 @@ export default function AdminStaff() {
         setSuccess(`${label} "${name}" creado exitosamente`);
         setName("");
         setEmail("");
+        setDni("");
         setPassword("");
         setRole("staff");
         setShowForm(false);
@@ -126,6 +133,35 @@ export default function AdminStaff() {
     } finally {
       setSavingRole(false);
       setEditingRole(null);
+    }
+  }
+
+  async function handleDniSave(member: StaffMember) {
+    const trimmed = dniValue.trim();
+    if (trimmed === (member.dni || "")) {
+      setEditingDni(null);
+      return;
+    }
+    setSavingDni(true);
+    try {
+      const res = await fetch(`/api/admin/staff/${member.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dni: trimmed }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        alert(json.error || "Error al actualizar DNI");
+      } else {
+        setSuccess(`DNI de "${member.name}" actualizado exitosamente`);
+        await fetchStaff();
+        setTimeout(() => setSuccess(""), 3000);
+      }
+    } catch {
+      alert("Error de conexión");
+    } finally {
+      setSavingDni(false);
+      setEditingDni(null);
     }
   }
 
@@ -245,6 +281,22 @@ export default function AdminStaff() {
               </div>
             </div>
             <div>
+              <label className="block text-xs font-medium text-stone-400 mb-1">DNI</label>
+              <div className="relative">
+                <CreditCard size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={8}
+                  value={dni}
+                  onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
+                  placeholder="12345678"
+                  className="w-full pl-9 pr-3 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-white text-sm placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                />
+              </div>
+              <p className="text-[11px] text-stone-500 mt-1">Con este DNI se iniciará sesión</p>
+            </div>
+            <div>
               <label className="block text-xs font-medium text-stone-400 mb-1">Contraseña</label>
               <div className="relative">
                 <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
@@ -335,6 +387,7 @@ export default function AdminStaff() {
               <thead>
                 <tr className="border-b border-stone-800">
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider">Nombre</th>
+                  <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider">DNI</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Email</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider">Rol</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Creado</th>
@@ -345,6 +398,7 @@ export default function AdminStaff() {
                 {staff.map((s) => {
                   const RoleIcon = ROLE_ICONS[s.role] || ChefHat;
                   const isEditing = editingRole === s.id;
+                  const isEditingDni = editingDni === s.id;
                   const isSelf = s.id === currentUser?.uid;
                   return (
                     <tr key={s.id} className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors">
@@ -358,6 +412,44 @@ export default function AdminStaff() {
                             <span className="text-[10px] text-stone-500 bg-stone-800 px-1.5 py-0.5 rounded">tú</span>
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditingDni ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={8}
+                              value={dniValue}
+                              onChange={(e) => setDniValue(e.target.value.replace(/\D/g, ""))}
+                              className="w-24 bg-stone-800 border border-stone-700 rounded-lg text-white text-xs px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                            />
+                            <button
+                              onClick={() => handleDniSave(s)}
+                              disabled={savingDni}
+                              className="p-1 text-emerald-400 hover:text-emerald-300 disabled:opacity-50"
+                            >
+                              {savingDni ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                            </button>
+                            <button
+                              onClick={() => setEditingDni(null)}
+                              className="p-1 text-stone-500 hover:text-stone-300"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingDni(s.id);
+                              setDniValue(s.dni || "");
+                            }}
+                            className={`font-mono text-xs ${s.dni ? "text-stone-300 hover:text-amber-400" : "text-stone-600 italic hover:text-amber-400"} transition-colors`}
+                            title="Editar DNI"
+                          >
+                            {s.dni || "Sin DNI"}
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-stone-400">{s.email}</td>
                       <td className="px-4 py-3">

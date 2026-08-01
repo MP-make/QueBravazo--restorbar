@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Eye, EyeOff, Loader2, User } from "lucide-react";
+import { Lock, Eye, EyeOff, Loader2, CreditCard } from "lucide-react";
 import { useAuthStore } from "@/lib/stores/auth";
 
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [dni, setDni] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,11 +21,13 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
+    const query = dni.trim();
+
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ dni: query, email: query, password }),
       });
       const data = await res.json();
 
@@ -73,19 +75,19 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-1.5">
-              Email o nombre
+            <label htmlFor="dni" className="block text-sm font-medium text-white/80 mb-1.5">
+              Email o DNI
             </label>
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+              <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
               <input
-                id="email"
+                id="dni"
                 type="text"
                 autoComplete="username"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="correo@ejemplo.com"
+                value={dni}
+                onChange={(e) => setDni(e.target.value)}
+                placeholder="correo@ejemplo.com o tu DNI"
                 className="w-full pl-10 pr-4 py-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500/60 transition-all"
               />
             </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth";
-import { LogOut, User, Mail, Shield, Save, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { LogOut, User, Mail, Shield, Save, Eye, EyeOff, CheckCircle, CreditCard } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
   staff: "Mesero",
@@ -23,11 +23,21 @@ export default function PerfilPage() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSaved, setPasswordSaved] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const [editingDni, setEditingDni] = useState(false);
+  const [dniInput, setDniInput] = useState(user?.dni || "");
+  const [dniPassword, setDniPassword] = useState("");
+  const [showDniPassword, setShowDniPassword] = useState(false);
+  const [savingDni, setSavingDni] = useState(false);
+  const [dniError, setDniError] = useState("");
+  const [dniSaved, setDniSaved] = useState(false);
 
   if (!user) return null;
 
@@ -54,10 +64,14 @@ export default function PerfilPage() {
   }
 
   async function handleChangePassword() {
-    if (!currentPassword || !newPassword || !user) return;
+    if (!currentPassword || !newPassword || !confirmPassword || !user) return;
     setPasswordError("");
     if (newPassword.length < 6) {
       setPasswordError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Las contraseñas no coinciden");
       return;
     }
     setSavingPassword(true);
@@ -71,6 +85,7 @@ export default function PerfilPage() {
       if (!json.ok) throw new Error(json.error);
       setCurrentPassword("");
       setNewPassword("");
+      setConfirmPassword("");
       setShowChangePassword(false);
       setPasswordSaved(true);
       setTimeout(() => setPasswordSaved(false), 3000);
@@ -78,6 +93,39 @@ export default function PerfilPage() {
       setPasswordError(err.message || "Error al cambiar contraseña");
     } finally {
       setSavingPassword(false);
+    }
+  }
+
+  async function handleSaveDni() {
+    if (!user) return;
+    setDniError("");
+    const trimmed = dniInput.trim();
+    if (!/^\d{8}$/.test(trimmed)) {
+      setDniError("El DNI debe tener 8 dígitos");
+      return;
+    }
+    if (!dniPassword) {
+      setDniError("Ingresa tu contraseña para confirmar");
+      return;
+    }
+    setSavingDni(true);
+    try {
+      const res = await fetch(`/api/admin/staff/${user.uid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dni: trimmed, current_password: dniPassword }),
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error);
+      user.dni = trimmed;
+      setDniPassword("");
+      setEditingDni(false);
+      setDniSaved(true);
+      setTimeout(() => setDniSaved(false), 3000);
+    } catch (err: any) {
+      setDniError(err.message || "Error al guardar DNI");
+    } finally {
+      setSavingDni(false);
     }
   }
 
@@ -160,6 +208,77 @@ export default function PerfilPage() {
           </div>
         </div>
 
+        {/* DNI */}
+        <div className="bg-stone-900 border border-stone-800 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[10px] text-stone-500 uppercase tracking-wider font-medium">DNI</p>
+            {!editingDni && (
+              <button
+                onClick={() => { setDniInput(user.dni || ""); setDniError(""); setDniPassword(""); setEditingDni(true); }}
+                className="text-[11px] text-amber-400 underline"
+              >
+                Editar
+              </button>
+            )}
+          </div>
+          {editingDni ? (
+            <div className="space-y-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={8}
+                value={dniInput}
+                onChange={(e) => setDniInput(e.target.value.replace(/\D/g, ""))}
+                placeholder="12345678"
+                className="w-full px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              />
+              <div>
+                <label className="text-[10px] text-stone-500 uppercase tracking-wider block mb-1">Contraseña para confirmar</label>
+                <div className="relative">
+                  <input
+                    type={showDniPassword ? "text" : "password"}
+                    value={dniPassword}
+                    onChange={(e) => setDniPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                    placeholder="Ingresa tu contraseña"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDniPassword(!showDniPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
+                  >
+                    {showDniPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              {dniError && <p className="text-rose-400 text-[11px]">{dniError}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditingDni(false)}
+                  className="flex-1 py-2 bg-stone-800 text-stone-400 rounded-lg text-xs font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveDni}
+                  disabled={savingDni}
+                  className="flex-1 py-2 bg-amber-500 text-black rounded-lg text-xs font-bold disabled:opacity-50 flex items-center justify-center gap-1"
+                >
+                  <Save size={14} />
+                  {savingDni ? "Guardando..." : "Guardar"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm font-medium">{user.dni || "Sin DNI"}</p>
+          )}
+          {dniSaved && (
+            <p className="text-green-400 text-[11px] mt-2 flex items-center gap-1">
+              <CheckCircle size={12} /> DNI actualizado
+            </p>
+          )}
+        </div>
+
         {/* Rol (read-only) */}
         <div className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex items-center gap-3">
           <Shield size={18} className="text-amber-500 flex-shrink-0" />
@@ -217,12 +336,31 @@ export default function PerfilPage() {
                   </button>
                 </div>
               </div>
+              <div>
+                <label className="text-[10px] text-stone-500 uppercase tracking-wider block mb-1">Confirmar nueva contraseña</label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                    placeholder="Repite la contraseña"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
+                  >
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
               {passwordError && (
                 <p className="text-rose-400 text-[11px]">{passwordError}</p>
               )}
               <button
                 onClick={handleChangePassword}
-                disabled={savingPassword || !currentPassword || !newPassword}
+                disabled={savingPassword || !currentPassword || !newPassword || !confirmPassword}
                 className="w-full py-2 bg-amber-500 text-black rounded-lg text-xs font-bold disabled:opacity-50"
               >
                 {savingPassword ? "Cambiando..." : "Cambiar contraseña"}

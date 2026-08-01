@@ -14,25 +14,39 @@ export async function POST(req: Request) {
       );
     }
 
-    const { email, password } = await req.json();
-    if (!email || !password) {
-      return NextResponse.json({ ok: false, error: 'Email/nombre y contraseña requeridos' });
+    const { dni, email, password } = await req.json();
+    const query = (dni || email || "").trim();
+    if (!query) {
+      return NextResponse.json({ ok: false, error: 'DNI o email requerido' });
+    }
+    if (!password) {
+      return NextResponse.json({ ok: false, error: 'Contraseña requerida' });
     }
 
-    const query = email.trim();
     const supabase = createAdminClient();
 
     let { data, error } = await supabase
       .from('admin_users')
-      .select('id, email, name, role, password_hash')
-      .eq('email', query.toLowerCase())
+      .select('id, email, name, dni, role, password_hash')
+      .eq('dni', query)
       .eq('is_active', true)
       .maybeSingle();
 
     if (!data && !error) {
       const res = await supabase
         .from('admin_users')
-        .select('id, email, name, role, password_hash')
+        .select('id, email, name, dni, role, password_hash')
+        .eq('email', query.toLowerCase())
+        .eq('is_active', true)
+        .maybeSingle();
+      data = res.data;
+      error = res.error;
+    }
+
+    if (!data && !error) {
+      const res = await supabase
+        .from('admin_users')
+        .select('id, email, name, dni, role, password_hash')
         .eq('name', query)
         .eq('is_active', true)
         .maybeSingle();
@@ -61,7 +75,7 @@ export async function POST(req: Request) {
     const response = NextResponse.json({
       ok: true,
       admin: true,
-      user: { uid: data.id, email: data.email, name: data.name, role: data.role },
+      user: { uid: data.id, email: data.email, name: data.name, dni: data.dni, role: data.role },
     });
 
     response.cookies.set('session', crypto.randomUUID(), {

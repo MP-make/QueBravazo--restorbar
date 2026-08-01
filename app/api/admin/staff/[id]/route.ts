@@ -7,13 +7,52 @@ const VALID_ROLES = ['admin', 'staff', 'chef'] as const;
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { name, role, is_active, current_password, new_password } = await req.json();
+    const { name, dni, role, is_active, current_password, new_password } = await req.json();
     const supabase = createAdminClient();
 
     const updates: Record<string, any> = {};
 
     if (name) {
       updates.name = name.trim();
+    }
+
+    if (dni !== undefined) {
+      const dniTrim = String(dni).trim();
+      if (dniTrim && !/^\d{8}$/.test(dniTrim)) {
+        return NextResponse.json({ ok: false, error: 'El DNI debe tener 8 dígitos' }, { status: 400 });
+      }
+
+      if (dniTrim) {
+        const { data: existingDni } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('dni', dniTrim)
+          .neq('id', id)
+          .maybeSingle();
+
+        if (existingDni) {
+          return NextResponse.json({ ok: false, error: 'Este DNI ya está registrado' }, { status: 400 });
+        }
+      }
+
+      if (current_password) {
+        const { data: user } = await supabase
+          .from('admin_users')
+          .select('password_hash')
+          .eq('id', id)
+          .single();
+
+        if (!user) {
+          return NextResponse.json({ ok: false, error: 'Usuario no encontrado' }, { status: 404 });
+        }
+
+        const valid = await bcrypt.compare(current_password, user.password_hash);
+        if (!valid) {
+          return NextResponse.json({ ok: false, error: 'Contraseña actual incorrecta' }, { status: 400 });
+        }
+      }
+
+      updates.dni = dniTrim || null;
     }
 
     if (role && VALID_ROLES.includes(role as any)) {
@@ -58,7 +97,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       .from('admin_users')
       .update(updates)
       .eq('id', id)
-      .select('id, email, name, role')
+      .select('id, email, name, dni, role')
       .single();
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });

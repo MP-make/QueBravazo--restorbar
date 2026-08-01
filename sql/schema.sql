@@ -65,12 +65,15 @@ CREATE TABLE admin_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
+  dni TEXT,
   role TEXT DEFAULT 'admin' CHECK (role IN ('admin', 'superadmin')),
   password_hash TEXT DEFAULT '',
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE UNIQUE INDEX idx_admin_users_dni ON admin_users (dni) WHERE dni IS NOT NULL AND dni <> '';
 
 -- 6. CONFIGURACIONES GENERALES (key-value)
 CREATE TABLE site_settings (
