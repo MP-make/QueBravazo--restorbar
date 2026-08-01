@@ -54,13 +54,6 @@ export default function AdminYapePage() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <div className="mb-6">
-        <h1 className="text-lg font-bold text-white">Configuración de Yape</h1>
-        <p className="text-sm text-stone-400 mt-1">
-          Los meseros verán estos datos al cobrar con Yape
-        </p>
-      </div>
-
       <div className="space-y-6">
         {/* QR Image */}
         <div>
@@ -72,7 +65,7 @@ export default function AdminYapePage() {
             onChange={setQrUrl}
           />
           {qrUrl && (
-            <div className="mt-3 bg-white rounded-xl p-4 inline-block">
+            <div className="mt-3 inline-block">
               <Image
                 src={qrUrl}
                 alt="QR Yape"

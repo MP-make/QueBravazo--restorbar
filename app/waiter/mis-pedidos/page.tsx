@@ -431,7 +431,7 @@ export default function MisPedidosPage() {
               </button>
             </div>
             <div className="p-6 flex flex-col items-center">
-              <div className="bg-white rounded-2xl p-4 shadow-lg">
+              <div>
                 {yapeConfig.qr_url ? (
                   <Image src={yapeConfig.qr_url} alt="QR Yape" width={300} height={300} className="rounded-lg" unoptimized />
                 ) : (

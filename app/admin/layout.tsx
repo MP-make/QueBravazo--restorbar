@@ -273,7 +273,7 @@ VALUES ('${user?.email || 'tu@email.com'}', 'Admin', 'superadmin');`}
 
         {/* Bottom nav (mobile only) */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-stone-900 border-t border-stone-800 safe-area-bottom">
-          <div className="flex items-center overflow-x-auto no-scrollbar h-16 px-1">
+          <div className="flex items-center justify-center overflow-x-auto no-scrollbar h-16 px-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActiveRoute(item);

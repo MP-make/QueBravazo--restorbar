@@ -1,65 +1,41 @@
 "use client";
 
-import { Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ClipboardList, Smartphone } from "lucide-react";
+import { useState } from "react";
+import { Smartphone, X } from "lucide-react";
 import AdminOrders from "@/components/admin/sections/OrdersSection";
 import AdminYape from "@/components/admin/sections/YapeSection";
 
-const TABS = [
-  { key: "orders", label: "Pedidos", icon: ClipboardList, component: AdminOrders },
-  { key: "yape", label: "Yape", icon: Smartphone, component: AdminYape },
-];
-
-function OrdersTabs() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const requested = searchParams.get("tab") || "orders";
-  const active = TABS.some((t) => t.key === requested) ? requested : "orders";
-  const ActiveComponent = TABS.find((t) => t.key === active)!.component;
-
-  function switchTab(key: string) {
-    if (key === active) return;
-    router.replace(`/admin/orders?tab=${key}`);
-  }
+export default function AdminOrdersPage() {
+  const [showYape, setShowYape] = useState(false);
 
   return (
     <div>
-      <div className="flex items-center gap-1 mb-6 overflow-x-auto no-scrollbar border-b border-stone-800">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = tab.key === active;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => switchTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px ${
-                isActive
-                  ? "border-amber-500 text-amber-400"
-                  : "border-transparent text-stone-400 hover:text-stone-200"
-              }`}
-            >
-              <Icon size={16} />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-      <ActiveComponent />
-    </div>
-  );
-}
+      <AdminOrders onOpenYape={() => setShowYape(true)} />
 
-export default function AdminOrdersPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      {showYape && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowYape(false)} />
+          <div className="relative bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-stone-800 sticky top-0 bg-stone-900 z-10">
+              <div>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Smartphone size={18} className="text-sky-400" />
+                  Configuración de Yape
+                </h2>
+                <p className="text-sm text-stone-400 mt-1">
+                  Los meseros verán estos datos al cobrar con Yape
+                </p>
+              </div>
+              <button onClick={() => setShowYape(false)} className="text-stone-400 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-5">
+              <AdminYape />
+            </div>
+          </div>
         </div>
-      }
-    >
-      <OrdersTabs />
-    </Suspense>
+      )}
+    </div>
   );
 }

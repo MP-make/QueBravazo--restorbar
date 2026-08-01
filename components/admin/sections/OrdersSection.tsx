@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/lib/stores/auth";
 import Image from "next/image";
-import { X, CheckCircle, Archive, DollarSign, QrCode, Search, Filter } from "lucide-react";
+import { X, CheckCircle, Archive, DollarSign, QrCode, Search, Filter, Smartphone } from "lucide-react";
 
 interface OrderItem {
   product_id: string;
@@ -32,7 +32,7 @@ interface Order {
   customer_name?: string;
 }
 
-export default function AdminOrdersPage() {
+export default function AdminOrdersPage({ onOpenYape }: { onOpenYape?: () => void }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -123,6 +123,13 @@ export default function AdminOrdersPage() {
               className="w-full sm:w-52 pl-8 pr-3 py-2 bg-stone-800/80 border border-stone-700/80 rounded-xl text-white text-xs placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 transition-all"
             />
           </div>
+          <button
+            onClick={onOpenYape}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-lg shadow-sky-500/25 transition-all duration-200"
+          >
+            <Smartphone size={16} />
+            Configurar Yape
+          </button>
           <button
             onClick={() => setShowArchived(!showArchived)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
