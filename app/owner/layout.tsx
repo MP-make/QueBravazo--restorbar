@@ -5,15 +5,16 @@ import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth";
-import { ShoppingBag, ClipboardList, User, LogOut } from "lucide-react";
+import { ShoppingBag, ClipboardList, LayoutList, User, LogOut } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/waiter", label: "Pedidos", icon: ShoppingBag },
-  { href: "/waiter/mis-pedidos", label: "Mis Pedidos", icon: ClipboardList },
-  { href: "/waiter/perfil", label: "Perfil", icon: User },
+  { href: "/owner", label: "Pedidos", icon: ShoppingBag },
+  { href: "/owner/mis-pedidos", label: "Mis Pedidos", icon: ClipboardList },
+  { href: "/owner/pedidos", label: "Todos los Pedidos", icon: LayoutList },
+  { href: "/owner/perfil", label: "Perfil", icon: User },
 ];
 
-export default function WaiterLayout({ children }: { children: React.ReactNode }) {
+export default function OwnerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoggedIn, isHydrated, logout } = useAuthStore();
@@ -24,7 +25,7 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
       router.replace("/login");
       return;
     }
-    if (user.role !== "staff" && user.role !== "admin") {
+    if (user.role !== "owner" && user.role !== "admin") {
       router.replace("/");
       return;
     }
@@ -38,25 +39,23 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
     );
   }
 
-  if (user?.role !== "staff" && user?.role !== "admin") return null;
+  if (user?.role !== "owner" && user?.role !== "admin") return null;
 
   const isActiveRoute = (href: string) => pathname === href;
 
   return (
-    // w-full + overflow-x-hidden a nivel raíz: contiene cualquier desborde
-    // horizontal que pueda producirse más abajo en el árbol.
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex">
       {/* Desktop sidebar */}
       <aside className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-stone-900/95 border-r border-stone-800/80 shadow-[4px_0_20px_rgba(0,0,0,0.3)]">
         <div className="h-14 flex items-center gap-3 px-4 border-b border-stone-800/80">
           <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30 flex-shrink-0 shadow-lg shadow-amber-500/10">
             <div className="w-full h-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black text-xs font-bold">
-              {user?.name?.charAt(0) || "M"}
+              {user?.name?.charAt(0) || "D"}
             </div>
           </div>
           <div className="flex flex-col leading-tight min-w-0">
             <p className="text-xs font-black text-gradient-amber leading-tight">¡Qué Bravazo!</p>
-            <p className="text-[11px] text-stone-400 font-medium truncate">Mesero: {user?.name}</p>
+            <p className="text-[11px] text-stone-400 font-medium truncate">Dueño: {user?.name}</p>
           </div>
         </div>
         <nav className="flex-1 py-3 px-3 space-y-0.5">
@@ -93,10 +92,6 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
       </aside>
 
       {/* Main content */}
-      {/* min-w-0 es la corrección clave: sin esto, un flex item se niega a
-          encogerse por debajo del ancho intrínseco de su contenido (p.ej. el
-          nav de categorías con overflow-x-auto dentro de la página hija),
-          y termina empujando todo el documento más ancho que el viewport. */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Mobile top bar */}
         <header className="xl:hidden flex items-center justify-between gap-2 px-3 h-12 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800 flex-shrink-0">
@@ -106,7 +101,7 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
             </div>
             <div className="min-w-0">
               <p className="text-xs font-black text-amber-400 leading-tight truncate">¡Qué Bravazo!</p>
-              <p className="text-[9px] text-stone-500 truncate">Mesero: {user?.name}</p>
+              <p className="text-[9px] text-stone-500 truncate">Dueño: {user?.name}</p>
             </div>
           </div>
           <button onClick={() => { logout(); router.push("/login"); }} className="p-1.5 text-stone-400 hover:text-rose-400 flex-shrink-0">
@@ -119,7 +114,7 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
 
       {/* Mobile bottom nav */}
       <nav className="xl:hidden fixed bottom-0 left-0 right-0 z-50 bg-stone-900 border-t border-stone-800 pb-safe">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
+        <div className="flex items-center justify-around h-14 max-w-xl mx-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActiveRoute(item.href);

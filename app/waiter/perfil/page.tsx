@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth";
-import { LogOut, User, Mail, Shield, Save, Eye, EyeOff, CheckCircle, CreditCard } from "lucide-react";
+import { LogOut, Mail, Shield, Save, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
   staff: "Mesero",
   chef: "Cocinero",
   admin: "Administrador",
+  owner: "Dueño",
 };
 
 export default function PerfilPage() {
@@ -135,7 +136,7 @@ export default function PerfilPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-black text-white pb-20 xl:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
         <div className="flex items-center justify-between px-4 h-14 max-w-3xl mx-auto">

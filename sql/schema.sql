@@ -66,7 +66,7 @@ CREATE TABLE admin_users (
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   dni TEXT,
-  role TEXT DEFAULT 'admin' CHECK (role IN ('admin', 'superadmin')),
+  role TEXT DEFAULT 'admin' CHECK (role IN ('admin', 'superadmin', 'staff', 'chef', 'owner')),
   password_hash TEXT DEFAULT '',
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now(),

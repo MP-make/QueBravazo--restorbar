@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth";
-import { LogOut, User, Mail, Shield, Save, Eye, EyeOff, CheckCircle, CreditCard } from "lucide-react";
+import { LogOut, Mail, Shield, Save, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
   staff: "Mesero",

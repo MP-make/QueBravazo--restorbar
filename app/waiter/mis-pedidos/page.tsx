@@ -183,7 +183,7 @@ export default function MisPedidosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-black text-white pb-20 xl:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
         <div className="flex items-center justify-between px-4 h-14 max-w-3xl mx-auto">
@@ -372,12 +372,10 @@ export default function MisPedidosPage() {
                   {/* Cancel button (always available if unpaid) */}
                   {selectedOrder.payment_status !== "paid" && selectedOrder.status !== "cancelled" && (
                     <div className="flex gap-2">
-                      {selectedOrder.status !== "served" && (
-                        <button onClick={() => router.push(`/waiter?edit=${selectedOrder.id}`)} className="flex-1 py-2 bg-amber-600/20 text-amber-400 rounded-xl text-xs font-medium hover:bg-amber-600/30 transition-colors flex items-center justify-center gap-1">
-                          <Pencil size={14} /> Editar
-                        </button>
-                      )}
-                      <button onClick={() => handleEditStatus(selectedOrder.id, "cancelled")} className={`py-2 bg-rose-600/20 text-rose-400 rounded-xl text-xs font-medium hover:bg-rose-600/30 transition-colors ${selectedOrder.status !== "served" ? "flex-1" : "w-full"}`}>
+                      <button onClick={() => router.push(`/${user?.role === "owner" ? "owner" : "waiter"}?edit=${selectedOrder.id}`)} className="flex-1 py-2 bg-amber-600/20 text-amber-400 rounded-xl text-xs font-medium hover:bg-amber-600/30 transition-colors flex items-center justify-center gap-1">
+                        <Pencil size={14} /> Editar
+                      </button>
+                      <button onClick={() => handleEditStatus(selectedOrder.id, "cancelled")} className="flex-1 py-2 bg-rose-600/20 text-rose-400 rounded-xl text-xs font-medium hover:bg-rose-600/30 transition-colors">
                         Cancelar
                       </button>
                     </div>

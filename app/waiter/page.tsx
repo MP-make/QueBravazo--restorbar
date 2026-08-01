@@ -59,7 +59,7 @@ export default function WaiterPage() {
       router.replace("/login");
       return;
     }
-    if (user.role !== "staff" && user.role !== "admin") {
+    if (user.role !== "staff" && user.role !== "admin" && user.role !== "owner") {
       router.replace("/");
       return;
     }
@@ -252,7 +252,7 @@ export default function WaiterPage() {
       setEditOrderId(null);
       setCustomerName("");
       if (editOrderId) {
-        router.push("/waiter/mis-pedidos");
+        router.push(`/${user.role === "owner" ? "owner" : "waiter"}/mis-pedidos`);
       }
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
@@ -278,13 +278,13 @@ export default function WaiterPage() {
     );
   }
 
-  if (user?.role !== "staff" && user?.role !== "admin") return null;
+  if (user?.role !== "staff" && user?.role !== "admin" && user?.role !== "owner") return null;
 
   return (
     // w-full max-w-full overflow-x-hidden: evita que este subárbol se
     // convierta en el "content culprit" que fuerza min-width:auto en el
     // flex item padre del layout.
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex flex-col pb-24 lg:pb-0">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-black text-white flex flex-col pb-24 xl:pb-0">
       {scheduleError && (
         <div className="px-3 pt-2">
           <p className="text-[11px] text-rose-400">
@@ -296,7 +296,7 @@ export default function WaiterPage() {
       {/* Category pills */}
       {visibleCategories.length > 0 && (
         <nav className="w-full max-w-full bg-black/90 backdrop-blur-sm border-b border-stone-800/50 overflow-x-auto">
-          <div className="flex flex-nowrap gap-1.5 px-3 py-2 w-max min-w-full max-w-7xl mx-auto lg:justify-center">
+          <div className="flex flex-nowrap gap-1.5 px-3 py-2 w-max min-w-full max-w-7xl mx-auto md:justify-center">
             {visibleCategories.map((c) => (
               <button
                 key={c.slug}
@@ -369,7 +369,7 @@ export default function WaiterPage() {
       {showCart && (
         <div className="fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCart(false)} />
-          <div className="absolute bottom-0 left-0 right-0 w-full max-w-full bg-stone-900/95 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden lg:absolute lg:right-6 lg:bottom-auto lg:top-20 lg:left-auto lg:w-96 lg:rounded-2xl lg:max-h-[calc(100vh-8rem)] lg:shadow-2xl lg:shadow-amber-500/5 lg:border lg:border-stone-700/50 lg:backdrop-blur-md">
+          <div className="absolute bottom-0 left-0 right-0 w-full max-w-full bg-stone-900/95 border-t border-stone-800 rounded-t-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col overflow-hidden md:absolute md:right-6 md:bottom-auto md:top-20 md:left-auto md:w-96 md:rounded-2xl md:max-h-[calc(100vh-8rem)] md:shadow-2xl md:shadow-amber-500/5 md:border md:border-stone-700/50 md:backdrop-blur-md">
             <div className="flex items-center justify-between px-4 py-3.5 sm:p-4 border-b border-stone-800/80 flex-shrink-0">
               <h3 className="text-sm font-bold">{editOrderId ? "Editando pedido" : "Pedido"}</h3>
               <div className="flex items-center gap-2">
@@ -527,7 +527,7 @@ export default function WaiterPage() {
       {productCount > 0 && !showCart && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-28 lg:bottom-6 right-4 z-30 bg-gradient-to-r from-amber-500 to-amber-400 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/30 flex items-center gap-2 font-bold text-sm hover:from-amber-400 hover:to-amber-300 hover:shadow-xl hover:shadow-amber-500/40 active:scale-95 transition-all duration-200"
+          className="fixed bottom-28 xl:bottom-6 right-4 z-30 bg-gradient-to-r from-amber-500 to-amber-400 text-black px-5 py-3.5 rounded-full shadow-lg shadow-amber-500/30 flex items-center gap-2 font-bold text-sm hover:from-amber-400 hover:to-amber-300 hover:shadow-xl hover:shadow-amber-500/40 active:scale-95 transition-all duration-200"
         >
           <ShoppingBag size={20} />
           <span>S/ {total.toFixed(2)}</span>

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ROUTES = ['/admin', '/waiter', '/chef'];
+const PROTECTED_ROUTES = ['/admin', '/waiter', '/chef', '/owner'];
 const PUBLIC_ROUTES = ['/login', '/_next', '/api'];
 
 export function proxy(request: NextRequest) {

@@ -17,7 +17,8 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                    pathname === '/login' || 
                    pathname === '/register' ||
                    pathname?.startsWith('/delivery/checkout') ||
-                   pathname?.startsWith('/admin');
+                   pathname?.startsWith('/admin') ||
+                   pathname?.startsWith('/owner');
 
   const isMenu = pathname === '/menu';
   const isHome = pathname === '/';

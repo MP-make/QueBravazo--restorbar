@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'El DNI debe tener 8 dígitos' }, { status: 400 });
     }
 
-    const userRole = role === 'staff' ? 'staff' : 'admin';
+    const userRole = ['staff', 'chef', 'owner'].includes(role) ? role : 'admin';
 
     if (code !== REGISTER_CODE) {
       return NextResponse.json({ ok: false, error: 'Código de registro incorrecto' }, { status: 400 });

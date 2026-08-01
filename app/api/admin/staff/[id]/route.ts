@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import bcrypt from 'bcryptjs';
 
-const VALID_ROLES = ['admin', 'staff', 'chef'] as const;
+const VALID_ROLES = ['admin', 'staff', 'chef', 'owner'] as const;
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

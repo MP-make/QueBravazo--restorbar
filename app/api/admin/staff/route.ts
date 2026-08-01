@@ -8,7 +8,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('admin_users')
       .select('id, email, name, dni, role, is_active, created_at')
-      .in('role', ['staff', 'admin', 'chef'])
+      .in('role', ['staff', 'admin', 'chef', 'owner'])
       .order('name');
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'El DNI debe tener 8 dígitos' }, { status: 400 });
     }
 
-    const validRoles = ['admin', 'staff', 'chef'];
+    const validRoles = ['admin', 'staff', 'chef', 'owner'];
     const userRole = validRoles.includes(role) ? role : 'staff';
     if (password.length < 6) {
       return NextResponse.json({ ok: false, error: 'La contraseña debe tener al menos 6 caracteres' }, { status: 400 });

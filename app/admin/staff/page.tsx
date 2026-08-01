@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/lib/stores/auth";
-import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Check, X, Trash2, ToggleLeft, ToggleRight, CreditCard } from "lucide-react";
+import { UserPlus, Loader2, Mail, User, Lock, Shield, ChefHat, Check, X, Trash2, ToggleLeft, ToggleRight, CreditCard, Crown } from "lucide-react";
 
 interface StaffMember {
   id: string;
@@ -13,24 +13,27 @@ interface StaffMember {
   created_at: string;
 }
 
-const ROLE_OPTIONS = ["admin", "staff", "chef"] as const;
+const ROLE_OPTIONS = ["admin", "staff", "chef", "owner"] as const;
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
   staff: "Mesero",
   chef: "Cocinero",
+  owner: "Dueño",
 };
 
 const ROLE_ICONS: Record<string, typeof Shield> = {
   admin: Shield,
   staff: ChefHat,
   chef: ChefHat,
+  owner: Crown,
 };
 
 const ROLE_COLORS: Record<string, string> = {
   admin: "bg-amber-500/10 text-amber-400",
   staff: "bg-emerald-500/10 text-emerald-400",
   chef: "bg-sky-500/10 text-sky-400",
+  owner: "bg-violet-500/10 text-violet-400",
 };
 
 export default function AdminStaff() {
@@ -43,7 +46,7 @@ export default function AdminStaff() {
   const [email, setEmail] = useState("");
   const [dni, setDni] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"staff" | "admin" | "chef">("staff");
+  const [role, setRole] = useState<"staff" | "admin" | "chef" | "owner">("staff");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -90,7 +93,7 @@ export default function AdminStaff() {
       if (!json.ok) {
         setError(json.error || "Error al crear");
       } else {
-        const label = role === "admin" ? "Admin" : role === "chef" ? "Cocinero" : "Mesero";
+        const label = role === "admin" ? "Admin" : role === "chef" ? "Cocinero" : role === "owner" ? "Dueño" : "Mesero";
         setSuccess(`${label} "${name}" creado exitosamente`);
         setName("");
         setEmail("");
@@ -313,11 +316,11 @@ export default function AdminStaff() {
             </div>
             <div>
               <label className="block text-xs font-medium text-stone-400 mb-1">Rol</label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setRole("staff")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                     role === "staff"
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                       : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
@@ -329,7 +332,7 @@ export default function AdminStaff() {
                 <button
                   type="button"
                   onClick={() => setRole("admin")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                     role === "admin"
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                       : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
@@ -341,7 +344,7 @@ export default function AdminStaff() {
                 <button
                   type="button"
                   onClick={() => setRole("chef")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                     role === "chef"
                       ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
                       : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
@@ -349,6 +352,18 @@ export default function AdminStaff() {
                 >
                   <ChefHat size={16} />
                   Cocinero
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("owner")}
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                    role === "owner"
+                      ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                      : "bg-stone-800 text-stone-400 border-stone-700 hover:border-stone-600"
+                  }`}
+                >
+                  <Crown size={16} />
+                  Dueño
                 </button>
               </div>
             </div>

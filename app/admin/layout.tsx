@@ -7,30 +7,22 @@ import Image from "next/image";
 import { useAuthStore } from "@/lib/stores/auth";
 import {
   LayoutDashboard,
-  FolderTree,
   UtensilsCrossed,
-  Clock,
   ImageIcon,
   LogOut,
   ChevronRight,
   AlertTriangle,
   Menu,
   X,
-  CalendarCheck,
   Users,
-  Smartphone,
   ClipboardList,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/categories", label: "Categorías", icon: FolderTree },
-  { href: "/admin/products", label: "Productos", icon: UtensilsCrossed },
-  { href: "/admin/schedules", label: "Horarios", icon: Clock },
-  { href: "/admin/daily-menu", label: "Menú del Día", icon: CalendarCheck },
-  { href: "/admin/staff", label: "Meseros", icon: Users },
+  { href: "/admin/menu", label: "Menú", icon: UtensilsCrossed },
+  { href: "/admin/staff", label: "Usuarios", icon: Users },
   { href: "/admin/media", label: "Media", icon: ImageIcon },
-  { href: "/admin/yape", label: "Yape", icon: Smartphone },
   { href: "/admin/orders", label: "Pedidos", icon: ClipboardList },
 ];
 

@@ -2,25 +2,29 @@
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ClipboardList, Smartphone } from "lucide-react";
-import AdminOrders from "@/components/admin/sections/OrdersSection";
-import AdminYape from "@/components/admin/sections/YapeSection";
+import { FolderTree, UtensilsCrossed, Clock, CalendarCheck } from "lucide-react";
+import AdminCategories from "@/components/admin/sections/CategoriesSection";
+import AdminProducts from "@/components/admin/sections/ProductsSection";
+import AdminSchedules from "@/components/admin/sections/SchedulesSection";
+import AdminDailyMenu from "@/components/admin/sections/DailyMenuSection";
 
 const TABS = [
-  { key: "orders", label: "Pedidos", icon: ClipboardList, component: AdminOrders },
-  { key: "yape", label: "Yape", icon: Smartphone, component: AdminYape },
+  { key: "categories", label: "Categorías", icon: FolderTree, component: AdminCategories },
+  { key: "products", label: "Productos", icon: UtensilsCrossed, component: AdminProducts },
+  { key: "schedules", label: "Horarios", icon: Clock, component: AdminSchedules },
+  { key: "daily", label: "Menú del Día", icon: CalendarCheck, component: AdminDailyMenu },
 ];
 
-function OrdersTabs() {
+function MenuTabs() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const requested = searchParams.get("tab") || "orders";
-  const active = TABS.some((t) => t.key === requested) ? requested : "orders";
+  const requested = searchParams.get("tab") || "categories";
+  const active = TABS.some((t) => t.key === requested) ? requested : "categories";
   const ActiveComponent = TABS.find((t) => t.key === active)!.component;
 
   function switchTab(key: string) {
     if (key === active) return;
-    router.replace(`/admin/orders?tab=${key}`);
+    router.replace(`/admin/menu?tab=${key}`);
   }
 
   return (
@@ -50,7 +54,7 @@ function OrdersTabs() {
   );
 }
 
-export default function AdminOrdersPage() {
+export default function AdminMenuPage() {
   return (
     <Suspense
       fallback={
@@ -59,7 +63,7 @@ export default function AdminOrdersPage() {
         </div>
       }
     >
-      <OrdersTabs />
+      <MenuTabs />
     </Suspense>
   );
 }
