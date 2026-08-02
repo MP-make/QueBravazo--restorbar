@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth";
 import Image from "next/image";
-import { X, CheckCircle, QrCode, DollarSign, Plus, Minus, Clock, CookingPot, Pencil, Wallet, Package } from "lucide-react";
+import { X, CheckCircle, QrCode, DollarSign, Plus, Minus, Clock, CookingPot, Pencil, Wallet, Package, ClipboardList, BarChart3 } from "lucide-react";
 import DatePicker from "@/components/shared/DatePicker";
 
 type DateFilterType = "today" | "yesterday" | "week" | "date";
@@ -271,11 +271,36 @@ export default function MisPedidosPage() {
     <div className="min-h-screen bg-black text-white pb-20 xl:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-stone-900/95 backdrop-blur-sm border-b border-stone-800">
-        <div className="flex items-center justify-between px-4 h-14 max-w-3xl mx-auto">
-          <h1 className="text-sm sm:text-base font-bold">Mis Pedidos</h1>
-          <button onClick={fetchOrders} className="text-[10px] sm:text-xs text-amber-400 underline">
-            Recargar
-          </button>
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14">
+            <h1 className="text-sm sm:text-base font-bold">Mis Pedidos</h1>
+            <button onClick={fetchOrders} className="text-[10px] sm:text-xs text-amber-400 underline">
+              Recargar
+            </button>
+          </div>
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+            {([
+              { id: "pedidos", label: "Pedidos", icon: ClipboardList },
+              { id: "total", label: "Total", icon: BarChart3 },
+            ] as const).map((v) => {
+              const Icon = v.icon;
+              const active = view === v.id;
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => setView(v.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px ${
+                    active
+                      ? "border-amber-500 text-amber-400"
+                      : "border-transparent text-stone-400 hover:text-stone-200"
+                  }`}
+                >
+                  <Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  {v.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
@@ -286,26 +311,6 @@ export default function MisPedidosPage() {
           </div>
         ) : (
           <>
-            {/* View tabs */}
-            <div className="flex gap-1.5 mb-4">
-              {([
-                { id: "pedidos", label: "Pedidos" },
-                { id: "total", label: "Total" },
-              ] as const).map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => setView(v.id)}
-                  className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 ${
-                    view === v.id
-                      ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg shadow-amber-500/25"
-                      : "bg-stone-800/80 text-stone-400 hover:text-stone-200 border border-stone-700/50"
-                  }`}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
-
             <DateFilterBar value={dateFilter} customDate={customDate} onChange={handleDateFilterChange} />
 
             {view === "pedidos" ? (
