@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { X, CheckCircle, QrCode, DollarSign, Search } from "lucide-react";
+import DatePicker from "@/components/shared/DatePicker";
+
+function toIso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 interface OrderItem {
   product_id: string;
@@ -53,6 +58,7 @@ export default function OwnerAllOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [tab, setTab] = useState<Tab>("todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [fromDate, setFromDate] = useState(toIso(new Date()));
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -69,7 +75,12 @@ export default function OwnerAllOrdersPage() {
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  const filtered = orders.filter((o) => {
+  const dateFilteredOrders = useMemo(() => {
+    const from = new Date(`${fromDate}T00:00:00`);
+    return orders.filter((o) => new Date(o.created_at) >= from);
+  }, [orders, fromDate]);
+
+  const filtered = dateFilteredOrders.filter((o) => {
     if (o.status === "cancelled") return false;
     if (tab === "pendientes" && o.payment_status !== "pending") return false;
     if (tab === "pagados" && o.payment_status !== "paid") return false;
@@ -83,7 +94,7 @@ export default function OwnerAllOrdersPage() {
     );
   });
 
-  const totalRevenue = orders
+  const totalRevenue = dateFilteredOrders
     .filter((o) => o.payment_status === "paid")
     .reduce((s, o) => s + o.total, 0);
 
@@ -100,18 +111,24 @@ export default function OwnerAllOrdersPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight">Todos los pedidos</h1>
             <p className="text-xs text-stone-500 mt-1">
-              <span className="font-medium text-stone-300">{orders.length}</span> pedidos · <span className="font-medium text-amber-500">S/ {totalRevenue.toFixed(2)}</span> cobrado
+              <span className="font-medium text-stone-300">{dateFilteredOrders.length}</span> pedidos · <span className="font-medium text-amber-500">S/ {totalRevenue.toFixed(2)}</span> cobrado
             </p>
           </div>
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por mesero, cliente o producto..."
-              className="w-full pl-8 pr-3 py-2.5 bg-stone-800/80 border border-stone-700/80 rounded-xl text-white text-xs placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-            />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por mesero, cliente o producto..."
+                className="w-full pl-8 pr-3 py-2.5 bg-stone-800/80 border border-stone-700/80 rounded-xl text-white text-xs placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2 flex-shrink-0 sm:justify-start">
+              <span className="text-[11px] font-semibold text-stone-500">Desde</span>
+              <DatePicker value={fromDate} onChange={setFromDate} compact />
+            </div>
           </div>
         </div>
 
@@ -119,10 +136,10 @@ export default function OwnerAllOrdersPage() {
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
           {TABS.map((t) => {
             const count = t.id === "todos"
-              ? orders.filter((o) => o.status !== "cancelled").length
+              ? dateFilteredOrders.filter((o) => o.status !== "cancelled").length
               : t.id === "pendientes"
-                ? orders.filter((o) => o.status !== "cancelled" && o.payment_status === "pending").length
-                : orders.filter((o) => o.status !== "cancelled" && o.payment_status === "paid").length;
+                ? dateFilteredOrders.filter((o) => o.status !== "cancelled" && o.payment_status === "pending").length
+                : dateFilteredOrders.filter((o) => o.status !== "cancelled" && o.payment_status === "paid").length;
             return (
               <button
                 key={t.id}
