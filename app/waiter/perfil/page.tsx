@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuthStore } from "@/lib/stores/auth";
+import ImagePicker from "@/components/shared/ImagePicker";
 import { LogOut, Mail, Shield, Save, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -39,6 +41,26 @@ export default function PerfilPage() {
   const [savingDni, setSavingDni] = useState(false);
   const [dniError, setDniError] = useState("");
   const [dniSaved, setDniSaved] = useState(false);
+
+  const [yapeQr, setYapeQr] = useState("");
+  const [yapeName, setYapeName] = useState("");
+  const [savingYape, setSavingYape] = useState(false);
+  const [yapeSaved, setYapeSaved] = useState(false);
+  const [yapeError, setYapeError] = useState("");
+  const isOwner = user?.role === "owner";
+
+  useEffect(() => {
+    if (!user || !isOwner) return;
+    fetch(`/api/owner/yape-config?userId=${user.uid}`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.value) {
+          setYapeQr(res.value.qr_url || "");
+          setYapeName(res.value.name || "");
+        }
+      })
+      .catch(() => {});
+  }, [user, isOwner]);
 
   if (!user) return null;
 
@@ -127,6 +149,27 @@ export default function PerfilPage() {
       setDniError(err.message || "Error al guardar DNI");
     } finally {
       setSavingDni(false);
+    }
+  }
+
+  async function handleSaveYape() {
+    if (!user || !yapeName.trim()) return;
+    setYapeError("");
+    setSavingYape(true);
+    try {
+      const res = await fetch("/api/owner/yape-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.uid, qr_url: yapeQr, name: yapeName.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Error al guardar");
+      setYapeSaved(true);
+      setTimeout(() => setYapeSaved(false), 3000);
+    } catch (err: any) {
+      setYapeError(err.message || "Error al guardar");
+    } finally {
+      setSavingYape(false);
     }
   }
 
@@ -374,6 +417,53 @@ export default function PerfilPage() {
             </div>
           )}
         </div>
+
+        {/* Mi Yape (solo dueños) */}
+        {isOwner && (
+          <div className="bg-stone-900 border border-stone-800 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[10px] text-stone-500 uppercase tracking-wider font-medium">Mi Yape (tus pedidos)</p>
+            </div>
+            <p className="text-xs text-stone-500 mb-3">
+              Este Yape se mostrará solo en los pedidos que crees tú. No afecta a otros dueños ni meseros.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-stone-300 mb-1.5">Código QR de Yape</label>
+                <ImagePicker value={yapeQr} onChange={setYapeQr} />
+                {yapeQr && (
+                  <div className="mt-3 inline-block">
+                    <Image src={yapeQr} alt="QR Yape" width={140} height={140} className="rounded-lg" unoptimized />
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-300 mb-1.5">Nombre del titular</label>
+                <input
+                  type="text"
+                  value={yapeName}
+                  onChange={(e) => setYapeName(e.target.value)}
+                  placeholder="Ej: Juan Pérez"
+                  className="w-full px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-white text-sm placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                />
+              </div>
+              {yapeError && <p className="text-rose-400 text-[11px]">{yapeError}</p>}
+              <button
+                onClick={handleSaveYape}
+                disabled={savingYape || !yapeName.trim()}
+                className="w-full py-2.5 bg-amber-500 text-black rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+              >
+                <Save size={14} />
+                {savingYape ? "Guardando..." : yapeSaved ? "Guardado" : "Guardar mi Yape"}
+              </button>
+              {yapeSaved && (
+                <p className="text-green-400 text-[11px] flex items-center gap-1">
+                  <CheckCircle size={12} /> Yape actualizado para tus pedidos
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Logout */}
         <button

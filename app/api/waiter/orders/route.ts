@@ -22,7 +22,27 @@ export async function GET(req: Request) {
     const { data, error } = await query;
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ data });
+
+    const [globalRes, ownersRes] = await Promise.all([
+      supabase.from('site_settings').select('value').eq('key', 'yape_config').maybeSingle(),
+      supabase.from('admin_users').select('id, yape_qr_url, yape_name').eq('role', 'owner'),
+    ]);
+
+    const globalConfig = globalRes.data?.value ?? { qr_url: '', name: '¡Qué Bravazo! Restobar' };
+    const ownerMap = new Map<string, { qr_url: string; name: string }>();
+    for (const o of ownersRes.data || []) {
+      ownerMap.set(o.id, { qr_url: o.yape_qr_url || '', name: o.yape_name || '' });
+    }
+
+    const orders = (data || []).map((order: any) => {
+      const ownerYape = ownerMap.get(order.waiter_id);
+      const yapeConfig = ownerYape && (ownerYape.qr_url || ownerYape.name)
+        ? { qr_url: ownerYape.qr_url || globalConfig.qr_url || '', name: ownerYape.name || globalConfig.name || '¡Qué Bravazo! Restobar' }
+        : globalConfig;
+      return { ...order, yape_config: yapeConfig };
+    });
+
+    return NextResponse.json({ data: orders });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Error interno' }, { status: 500 });
   }

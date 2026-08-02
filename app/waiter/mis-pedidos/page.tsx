@@ -76,6 +76,7 @@ interface WaiterOrder {
   payment_status: string;
   created_at: string;
   customer_name?: string;
+  yape_config?: { qr_url: string; name: string };
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -228,6 +229,8 @@ export default function MisPedidosPage() {
     if (totalStatus === "total") return totalBaseOrders;
     return totalBaseOrders.filter((o) => o.payment_status === (totalStatus === "pendientes" ? "pending" : "paid"));
   }, [totalBaseOrders, totalStatus]);
+
+  const orderYape = selectedOrder?.yape_config || yapeConfig;
 
   const productTotals = useMemo(() => {
     const map = new Map<string, { title: string; quantity: number; amount: number }>();
@@ -616,7 +619,7 @@ export default function MisPedidosPage() {
       )}
 
       {/* Yape QR Modal */}
-      {showYapeModal && selectedOrder && yapeConfig && (
+      {showYapeModal && selectedOrder && orderYape && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowYapeModal(false)} />
           <div className="relative bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-sm mx-auto overflow-hidden">
@@ -628,15 +631,15 @@ export default function MisPedidosPage() {
             </div>
             <div className="p-6 flex flex-col items-center">
               <div>
-                {yapeConfig.qr_url ? (
-                  <Image src={yapeConfig.qr_url} alt="QR Yape" width={300} height={300} className="rounded-lg" unoptimized />
+                {orderYape.qr_url ? (
+                  <Image src={orderYape.qr_url} alt="QR Yape" width={300} height={300} className="rounded-lg" unoptimized />
                 ) : (
                   <div className="w-[300px] h-[300px] bg-stone-200 rounded-lg flex items-center justify-center text-stone-400 text-sm">
                     QR no configurado
                   </div>
                 )}
               </div>
-              <p className="text-sm font-medium text-white mt-4">{yapeConfig.name}</p>
+              <p className="text-sm font-medium text-white mt-4">{orderYape.name}</p>
               <p className="text-[11px] text-stone-500 mt-1 text-center">Escanea el código QR con tu app Yape para pagar</p>
             </div>
             <div className="px-6 pb-4 text-center">

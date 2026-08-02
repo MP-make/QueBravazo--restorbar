@@ -21,12 +21,16 @@ export async function GET() {
     for (const s of data || []) {
       const dw = (s as any).days_of_week || ((s as any).day_of_week !== null ? [(s as any).day_of_week] : [0, 1, 2, 3, 4, 5, 6]);
       if (!dw.includes(currentDay)) continue;
-      if (currentTime >= (s as any).start_time.slice(0, 5)) {
-        if ((s as any).end_time.slice(0, 5) === '00:00') {
-          activeTypes.add((s as any).menu_type);
-        } else if (currentTime <= (s as any).end_time.slice(0, 5)) {
-          activeTypes.add((s as any).menu_type);
-        }
+
+      const start = (s as any).start_time.slice(0, 5);
+      const end = (s as any).end_time.slice(0, 5);
+
+      if (end === '00:00') {
+        if (currentTime >= start) activeTypes.add((s as any).menu_type);
+      } else if (end < start) {
+        if (currentTime >= start || currentTime <= end) activeTypes.add((s as any).menu_type);
+      } else if (currentTime >= start && currentTime <= end) {
+        activeTypes.add((s as any).menu_type);
       }
     }
 
